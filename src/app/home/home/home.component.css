@@ -1,0 +1,12 @@
+.img-fixed {
+    height: 200px;
+    object-fit: cover;
+  }
+  
+  .card {
+    transition: transform 0.2s ease-in-out;
+  }
+  
+  .card:hover {
+    transform: translateY(-5px);
+  }
