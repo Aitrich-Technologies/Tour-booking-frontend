@@ -1,0 +1,101 @@
+<div class="container py-5">
+    <!-- Header row -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+      <h4 class="fw-bold mb-0">Tours & Packages</h4>
+      <!-- Bootstrap native modal trigger -->
+      <button type="button" 
+              class="btn btn-primary rounded-pill" 
+              data-bs-toggle="modal" 
+              data-bs-target="#addTourModal">
+        <i class="bi bi-plus-circle me-1"></i> Add New Tour
+      </button>
+    </div>
+
+    <!-- Tours count -->
+    <div class="mb-3">
+      <span class="badge bg-info">{{ tours.length }} {{ tours.length === 1 ? 'Tour' : 'Tours' }} Found</span>
+    </div>
+
+    <!-- Table -->
+    <div class="table-responsive shadow-sm rounded" *ngIf="tours.length > 0; else noTours">
+      <table class="table table-striped align-middle mb-0">
+        <thead class="table-primary">
+          <tr>
+            <th scope="col" style="width: 50px;">#</th>
+            <th scope="col">Title</th>
+            <th scope="col">Description</th>
+            <th scope="col">Price</th>
+            <th scope="col">Created</th>
+            <th scope="col" style="width: 150px;">Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let tour of tours; let i = index">
+            <th scope="row">{{ i + 1 }}</th>
+            <td>
+              <strong>{{ tour.title }}</strong>
+            </td>
+            <td>
+              <span class="text-truncate d-inline-block" 
+                    style="max-width: 200px;" 
+                    [title]="tour.description">
+                {{ tour.description }}
+              </span>
+            </td>
+            <td>
+              <span class="fw-bold text-success">\${{ tour.price }}</span>
+            </td>
+            <td>
+              <small class="text-muted">{{ tour.createdAt | date:'short' }}</small>
+            </td>
+            <td>
+              <button class="btn btn-sm btn-warning me-2 rounded-pill" 
+                      (click)="editTour(tour)"
+                      title="Edit Tour">
+                <i class="bi bi-pencil-square"></i>
+              </button>
+              <button class="btn btn-sm btn-danger rounded-pill" 
+                      (click)="deleteTour(tour.id)"
+                      title="Delete Tour"
+                      [attr.data-bs-toggle]="'tooltip'"
+                      [attr.data-bs-title]="'Delete ' + tour.title">
+                <i class="bi bi-trash"></i>
+              </button>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- No tours message -->
+    <ng-template #noTours>
+      <div class="text-center py-5">
+        <div class="mb-3">
+          <i class="bi bi-inbox display-1 text-muted"></i>
+        </div>
+        <h5 class="text-muted">No tours available</h5>
+        <p class="text-muted">Start by adding your first tour package</p>
+        <button type="button" 
+                class="btn btn-primary rounded-pill" 
+                data-bs-toggle="modal" 
+                data-bs-target="#addTourModal">
+          <i class="bi bi-plus-circle me-1"></i> Add Your First Tour
+        </button>
+      </div>
+    </ng-template>
+  </div>
+
+  <!-- Add Tour Modal Component -->
+  <app-add-tour (tourAdded)="onTourAdded($event)"></app-add-tour>
+
+  <!-- Success Toast -->
+  <div class="position-fixed top-0 end-0 p-3" style="z-index: 1055">
+    <div id="successToast" class="toast align-items-center text-bg-success border-0" role="alert">
+      <div class="d-flex">
+        <div class="toast-body">
+          {{ successMessage }}
+        </div>
+        <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
+      </div>
+    </div>
+  </div>
