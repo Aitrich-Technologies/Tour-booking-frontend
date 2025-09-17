@@ -1,0 +1,30 @@
+.table {
+    background-color: white;
+  }
+  
+  .table-primary {
+    background-color: #0d6efd !important;
+    color: white;
+  }
+
+  .table-primary th {
+    border-color: rgba(255, 255, 255, 0.2);
+  }
+
+  .text-truncate {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .btn-sm {
+    font-size: 0.75rem;
+  }
+
+  .display-1 {
+    font-size: 4rem;
+  }
+
+  .toast {
+    min-width: 300px;
+  }
