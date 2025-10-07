@@ -1,0 +1,171 @@
+<div class="container my-5">
+  <!-- View All + Manage Tours (Top Buttons, if enabled) -->
+  <div class="text-center mt-4" *ngIf="showViewAll && filteredTours.length > limit!">
+    <a routerLink="/tour" class="btn btn-outline-primary">
+      View All Tours <i class="bi bi-arrow-right ms-2"></i>
+    </a>
+
+    <!-- Extra button for agency/consultant -->
+    <a routerLink="/tour/manage" 
+       class="btn btn-primary ms-2"
+       *appHasRole="[UserRole.CONSULTANT, UserRole.AGENCY]">
+      <i class="bi bi-gear me-2"></i>Manage Tours
+    </a>
+  </div>  
+
+  
+  <!-- Header -->
+  <div class="d-flex justify-content-between align-items-center mb-4" *ngIf="showHeader">
+    <div>
+      <h3 class="fw-bold mb-1">{{ title }}</h3>
+      <p class="text-muted mb-0">{{ subtitle }}</p>
+    </div>
+  </div>
+
+  <!-- Filters & Search -->
+  <div class="row g-3 mb-4">
+    <div class="col-md-5">
+      <div class="input-group">
+        <span class="input-group-text bg-white">
+          <i class="bi bi-search"></i>
+        </span>
+        <input type="text" 
+               class="form-control" 
+               placeholder="Search tours by name or destination..."
+               [(ngModel)]="searchTerm"
+               (input)="filterTours()">
+      </div>
+    </div>
+
+    <div class="col-md-3">
+      <select class="form-select" 
+              [(ngModel)]="sortBy"
+              (change)="sortTours()">
+        <option value="popular">Most Popular</option>
+        <option value="price-low">Price: Low to High</option>
+        <option value="price-high">Price: High to Low</option>
+        <option value="newest">Newest First</option>
+      </select>
+    </div>
+
+    <div class="col-md-2" *ngIf="searchTerm">
+      <button class="btn btn-outline-secondary w-100" (click)="resetFilters()">
+        <i class="bi bi-arrow-clockwise me-2"></i>Clear
+      </button>
+    </div>
+  </div>
+
+  <!-- Tours Count -->
+  <div class="mb-3">
+    <span class="badge bg-info">
+      {{ filteredTours.length }} {{ filteredTours.length === 1 ? 'Tour' : 'Tours' }} Available
+    </span>
+  </div>
+
+  <!-- Loading State -->
+  <div class="text-center py-5" *ngIf="isLoading">
+    <div class="spinner-border text-primary" role="status">
+      <span class="visually-hidden">Loading...</span>
+    </div>
+    <p class="text-muted mt-3">Loading tours...</p>
+  </div>
+
+  <!-- Tours Grid (Card View) -->
+  <div class="row g-4" *ngIf="!isLoading">
+    @for (tour of displayedTours; track tour.id) {
+      <div class="col-12 col-sm-6 col-md-4" [class.col-lg-3]="compact">
+        <div class="card tour-card h-100 shadow-sm border-0">
+          <!-- Tour Image -->
+          <div class="position-relative">
+            <img [src]="getTourImage(tour)" 
+                 class="card-img-top tour-img" 
+                 [alt]="tour.tourName"
+                 (error)="onImageError($event)">
+            
+            <!-- Price Badge -->
+            <div class="position-absolute top-0 end-0 m-2" *ngIf="tour.price">
+              <span class="badge bg-success fs-6">
+                \${{ tour.price }}
+              </span>
+            </div>
+
+            <!-- Duration Badge -->
+            <div class="position-absolute top-0 start-0 m-2" *ngIf="tour.noOfNights">
+              <span class="badge bg-primary">
+                <i class="bi bi-moon-stars me-1"></i>{{ tour.noOfNights }} Nights
+              </span>
+            </div>
+          </div>
+
+          <!-- Card Body -->
+          <div class="card-body d-flex flex-column">
+            <h5 class="card-title fw-bold mb-2">{{ tour.tourName }}</h5>
+            
+            <!-- Destination -->
+            <div class="d-flex align-items-center text-muted mb-2 small" *ngIf="tour.destinationName">
+              <i class="bi bi-geo-alt-fill me-1"></i>
+              <span>{{ getDestinationName(tour.destinationName) }}</span>
+            </div>
+
+            <!-- Dates -->
+            <div class="d-flex align-items-center text-muted mb-3 small" *ngIf="tour.departureDate">
+              <i class="bi bi-calendar-event me-1"></i>
+              <span>
+                {{ tour.departureDate | date:'MMM d' }} - {{ tour.arrivalDate | date:'MMM d, y' }}
+              </span>
+            </div>
+
+            <!-- Description -->
+            <p class="card-text text-muted small flex-grow-1">
+              {{ truncateDescription(tour.tourDescription) }}
+            </p>
+
+            <!-- Action Button -->
+            <div class="mt-auto">
+              <a [routerLink]="['/tour', tour.id]" 
+                 class="btn btn-primary w-100 rounded-pill">
+                <i class="bi bi-eye me-2"></i>View Details
+              </a>
+            </div>
+          </div>
+        </div>
+      </div>
+    } @empty {
+      <div class="col-12">
+        <div class="text-center py-5">
+          <i class="bi bi-inbox display-1 text-muted"></i>
+          <h5 class="text-muted mt-3">No tours found</h5>
+          <p class="text-muted">Try adjusting your search or filters</p>
+        </div>
+      </div>
+    }
+  </div>
+
+  <!-- View All Button (Bottom) -->
+  <div class="text-center mt-4" *ngIf="showViewAll && filteredTours.length > limit!">
+    <a routerLink="/tour" class="btn btn-outline-primary">
+      View All Tours <i class="bi bi-arrow-right ms-2"></i>
+    </a>
+  </div>
+
+  <!-- Pagination -->
+  <nav class="mt-4" *ngIf="!showViewAll && filteredTours.length > 12">
+    <ul class="pagination justify-content-center">
+      <li class="page-item" [class.disabled]="currentPage === 1">
+        <a class="page-link" (click)="changePage(currentPage - 1)">
+          <i class="bi bi-chevron-left"></i>
+        </a>
+      </li>
+      <li class="page-item" 
+          *ngFor="let page of getPageNumbers()" 
+          [class.active]="page === currentPage">
+        <a class="page-link" (click)="changePage(page)">{{ page }}</a>
+      </li>
+      <li class="page-item" [class.disabled]="currentPage === totalPages">
+        <a class="page-link" (click)="changePage(currentPage + 1)">
+          <i class="bi bi-chevron-right"></i>
+        </a>
+      </li>
+    </ul>
+  </nav>
+</div>
