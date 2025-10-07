@@ -1,158 +1,128 @@
 <div class="container py-5">
-    <!-- Header row -->
-    <div class="d-flex justify-content-between align-items-center mb-4">
-      <h4 class="fw-bold mb-0">Destinations & Packages</h4>
-      <!-- Bootstrap native modal trigger -->
+  <!-- Header row -->
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <h4 class="fw-bold mb-0">Destinations & Packages</h4>
+    <div class="d-flex gap-2">
+      <button type="button" 
+              class="btn btn-outline-secondary rounded-pill" 
+              (click)="refreshDestinations()"
+              [disabled]="isLoading"
+              title="Refresh destinations">
+        <i class="bi bi-arrow-clockwise"></i>
+      </button>
       <button type="button" 
               class="btn btn-primary rounded-pill" 
-              data-bs-toggle="modal" 
-              data-bs-target="#addDestinationModal">
+              (click)="openAddModal()">
         <i class="bi bi-plus-circle me-1"></i> Add New Destination
       </button>
     </div>
+  </div>
 
-    <!-- Destinations count -->
-    <div class="mb-3">
-      <span class="badge bg-info">{{ destinations.length }} {{ destinations.length === 1 ? 'Destination' : 'Destinations' }} Found</span>
+  <!-- Loading indicator -->
+  <div *ngIf="isLoading" class="text-center py-4">
+    <div class="spinner-border text-primary" role="status">
+      <span class="visually-hidden">Loading...</span>
     </div>
+    <p class="mt-2 text-muted">Loading destinations...</p>
+  </div>
 
-    <!-- Cards Grid View -->
-    <div class="row g-4" *ngIf="destinations.length > 0; else noDestinations">
-      <div class="col-12 col-sm-6 col-md-4 col-lg-3" *ngFor="let destination of destinations; let i = index">
-        <div class="card h-100 shadow-sm border-0 destination-card">
-          <div class="position-relative">
-            <img [src]="destination.imageUrl" 
-                 [alt]="destination.name"
-                 class="card-img-top img-fixed" 
-                 (error)="onImageError($event)">
-            <span class="position-absolute top-0 end-0 m-2 badge bg-success fs-6">
-              \${{ destination.price }}
-            </span>
-          </div>
-          <div class="card-body d-flex flex-column">
-            <!-- Title + Duration -->
-            <div class="d-flex justify-content-between align-items-center mb-2">
-              <h5 class="card-title mb-0">{{ destination.name }}</h5>
-              <small class="text-muted">{{ destination.duration }}</small>
-            </div>
-            <!-- Description -->
-            <p class="card-text text-muted flex-grow-1">
-              {{ destination.description | slice:0:100 }}{{ destination.description.length > 100 ? '...' : '' }}
-            </p>
-            <!-- Created Date -->
-            <small class="text-muted mb-2">
-              <i class="bi bi-calendar-event me-1"></i>
-              Added {{ destination.createdAt | date:'mediumDate' }}
-            </small>
-            <!-- Actions -->
-            <div class="mt-auto">
-              <div class="btn-group w-100" role="group">
-                <button type="button" 
-                        class="btn btn-outline-primary btn-sm rounded-start-pill"
-                        (click)="editDestination(destination)">
-                  <i class="bi bi-pencil-square"></i> Edit
-                </button>
-                <button type="button" 
-                        class="btn btn-outline-danger btn-sm rounded-end-pill"
-                        (click)="deleteDestination(destination.id)">
-                  <i class="bi bi-trash"></i> Delete
-                </button>
-              </div>
-            </div>
-          </div>
+  <!-- Destinations count -->
+  <div class="mb-3" *ngIf="!isLoading">
+    <span class="badge bg-info">
+      {{ destinations.length }} {{ destinations.length === 1 ? 'Destination' : 'Destinations' }} Found
+    </span>
+  </div>
+
+  <!-- Cards Grid View -->
+  <div class="row g-4" *ngIf="destinations.length > 0 && !isLoading; else noDestinations">
+    <div class="col-12 col-sm-6 col-md-4 col-lg-3" *ngFor="let destination of destinations; let i = index">
+      <div class="card h-100 shadow-sm border-0 destination-card">
+        <div class="position-relative">
+          <img [src]="destination.imageUrl" 
+               [alt]="destination.name"
+               class="card-img-top"
+               style="height: 200px; object-fit: cover;" 
+               (error)="onImageError($event)">
         </div>
-      </div>
-    </div>
-
-    <!-- Table View Alternative (uncomment if you prefer table view) -->
-    <!--
-    <div class="table-responsive shadow-sm rounded" *ngIf="destinations.length > 0; else noDestinations">
-      <table class="table table-striped align-middle mb-0">
-        <thead class="table-primary">
-          <tr>
-            <th scope="col" style="width: 50px;">#</th>
-            <th scope="col">Image</th>
-            <th scope="col">Name</th>
-            <th scope="col">Description</th>
-            <th scope="col">Price</th>
-            <th scope="col">Duration</th>
-            <th scope="col">Created</th>
-            <th scope="col" style="width: 150px;">Actions</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr *ngFor="let destination of destinations; let i = index">
-            <th scope="row">{{ i + 1 }}</th>
-            <td>
-              <img [src]="destination.imageUrl" 
-                   [alt]="destination.name"
-                   class="img-thumbnail"
-                   style="width: 60px; height: 45px; object-fit: cover;">
-            </td>
-            <td>
-              <strong>{{ destination.name }}</strong>
-            </td>
-            <td>
-              <span class="text-truncate d-inline-block" 
-                    style="max-width: 200px;" 
-                    [title]="destination.description">
-                {{ destination.description }}
-              </span>
-            </td>
-            <td>
-              <span class="fw-bold text-success">\${{ destination.price }}</span>
-            </td>
-            <td>{{ destination.duration }}</td>
-            <td>
-              <small class="text-muted">{{ destination.createdAt | date:'short' }}</small>
-            </td>
-            <td>
-              <button class="btn btn-sm btn-warning me-2 rounded-pill" 
+        <div class="card-body d-flex flex-column">
+          <!-- Title -->
+          <h5 class="card-title mb-2">{{ destination.name }}</h5>
+          
+          <!-- Description -->
+          <p class="card-text text-muted small flex-grow-1" 
+             style="overflow: hidden; text-overflow: ellipsis; display: -webkit-box; -webkit-line-clamp: 3; line-clamp: 3; -webkit-box-orient: vertical;">
+            {{ destination.city }}
+          </p>
+          
+          <!-- Actions -->
+          <div class="mt-auto">
+            <div class="btn-group w-100" role="group">
+              <button type="button" 
+                      class="btn btn-outline-primary btn-sm rounded-start-pill"
                       (click)="editDestination(destination)"
-                      title="Edit Destination">
-                <i class="bi bi-pencil-square"></i>
+                      title="Edit destination">
+                <i class="bi bi-pencil-square"></i> Edit
               </button>
-              <button class="btn btn-sm btn-danger rounded-pill" 
+              <button type="button" 
+                      class="btn btn-outline-danger btn-sm rounded-end-pill"
                       (click)="deleteDestination(destination.id)"
-                      title="Delete Destination">
-                <i class="bi bi-trash"></i>
+                      title="Delete destination">
+                <i class="bi bi-trash"></i> Delete
               </button>
-            </td>
-          </tr>
-        </tbody>
-      </table>
-    </div>
-    -->
-
-    <!-- No destinations message -->
-    <ng-template #noDestinations>
-      <div class="text-center py-5">
-        <div class="mb-3">
-          <i class="bi bi-geo-alt display-1 text-muted"></i>
+            </div>
+          </div>
         </div>
-        <h5 class="text-muted">No destinations available</h5>
-        <p class="text-muted">Start by adding your first destination package</p>
-        <button type="button" 
-                class="btn btn-primary rounded-pill" 
-                data-bs-toggle="modal" 
-                data-bs-target="#addDestinationModal">
-          <i class="bi bi-plus-circle me-1"></i> Add Your First Destination
-        </button>
-      </div>
-    </ng-template>
-  </div>
-
-  <!-- Add Destination Modal Component -->
-  <app-add-destination (destinationAdded)="onDestinationAdded($event)"></app-add-destination>
-
-  <!-- Success Toast -->
-  <div class="position-fixed top-0 end-0 p-3" style="z-index: 1055">
-    <div id="successToast" class="toast align-items-center text-bg-success border-0" role="alert">
-      <div class="d-flex">
-        <div class="toast-body">
-          {{ successMessage }}
-        </div>
-        <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
       </div>
     </div>
   </div>
+
+  <!-- No destinations message -->
+  <ng-template #noDestinations>
+    <div class="text-center py-5" *ngIf="!isLoading">
+      <div class="mb-3">
+        <i class="bi bi-geo-alt display-1 text-muted"></i>
+      </div>
+      <h5 class="text-muted">No destinations available</h5>
+      <p class="text-muted">Start by adding your first destination package</p>
+      <button type="button" 
+              class="btn btn-primary rounded-pill" 
+              (click)="openAddModal()">
+        <i class="bi bi-plus-circle me-1"></i> Add Your First Destination
+      </button>
+    </div>
+  </ng-template>
+</div>
+
+<!-- Add/Edit Destination Modal Component -->
+<app-destination-form 
+  [destination]="selectedDestination"
+  [isEditMode]="isEditMode"
+  (destinationAdded)="onDestinationAdded()"
+  (destinationUpdated)="onDestinationUpdated()">
+</app-destination-form>
+
+<!-- Success Toast -->
+<div class="position-fixed top-0 end-0 p-3" style="z-index: 1055">
+  <div id="successToast" class="toast align-items-center text-bg-success border-0" role="alert">
+    <div class="d-flex">
+      <div class="toast-body">
+        <i class="bi bi-check-circle me-2"></i>
+        {{ successMessage }}
+      </div>
+      <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
+    </div>
+  </div>
+</div>
+
+<!-- Error Toast -->
+<div class="position-fixed top-0 end-0 p-3" style="z-index: 1055">
+  <div id="errorToast" class="toast align-items-center text-bg-danger border-0" role="alert">
+    <div class="d-flex">
+      <div class="toast-body">
+        <i class="bi bi-exclamation-triangle me-2"></i>
+        {{ errorMessage }}
+      </div>
+      <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
+    </div>
+  </div>
+</div>

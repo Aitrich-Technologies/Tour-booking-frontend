@@ -5,8 +5,7 @@
       <!-- Bootstrap native modal trigger -->
       <button type="button" 
               class="btn btn-primary rounded-pill" 
-              data-bs-toggle="modal" 
-              data-bs-target="#addTourModal">
+(click)="openAddModal()">
         <i class="bi bi-plus-circle me-1"></i> Add New Tour
       </button>
     </div>
@@ -21,46 +20,50 @@
       <table class="table table-striped align-middle mb-0">
         <thead class="table-primary">
           <tr>
-            <th scope="col" style="width: 50px;">#</th>
+            <th scope="col" >#</th>
             <th scope="col">Title</th>
             <th scope="col">Description</th>
             <th scope="col">Price</th>
-            <th scope="col">Created</th>
+            <th scope="col">Status</th>
             <th scope="col" style="width: 150px;">Actions</th>
           </tr>
         </thead>
         <tbody>
-          <tr *ngFor="let tour of tours; let i = index">
+          <tr *ngFor="let tour of tours; let i = index" (click)="getDetails(tour.id)" style="cursor: pointer;">
             <th scope="row">{{ i + 1 }}</th>
             <td>
-              <strong>{{ tour.title }}</strong>
+              <strong>{{ tour.tourName }}</strong>
             </td>
             <td>
-              <span class="text-truncate d-inline-block" 
-                    style="max-width: 200px;" 
-                    [title]="tour.description">
-                {{ tour.description }}
+              <span>
+                {{ tour.tourDescription }}
               </span>
             </td>
             <td>
-              <span class="fw-bold text-success">\${{ tour.price }}</span>
+              <span class="fw-bold text-success">${{ tour.price }}</span>
             </td>
             <td>
-              <small class="text-muted">{{ tour.createdAt | date:'short' }}</small>
-            </td>
+              <span class="text-uppercase">
+                {{ tour.status }}
+              </span>
             <td>
-              <button class="btn btn-sm btn-warning me-2 rounded-pill" 
+              <button class="btn btn-sm btn-info me-2 rounded-pill" 
+                      (click)="viewTour(tour)"
+                      title="View Tour Details">
+                <i class="bi bi-eye"></i>
+              </button>
+              <!-- <button class="btn btn-sm btn-warning me-2 rounded-pill" 
                       (click)="editTour(tour)"
                       title="Edit Tour">
                 <i class="bi bi-pencil-square"></i>
-              </button>
-              <button class="btn btn-sm btn-danger rounded-pill" 
+              </button> -->
+              <!-- <button class="btn btn-sm btn-danger rounded-pill" 
                       (click)="deleteTour(tour.id)"
                       title="Delete Tour"
                       [attr.data-bs-toggle]="'tooltip'"
                       [attr.data-bs-title]="'Delete ' + tour.title">
                 <i class="bi bi-trash"></i>
-              </button>
+              </button> -->
             </td>
           </tr>
         </tbody>
@@ -77,8 +80,7 @@
         <p class="text-muted">Start by adding your first tour package</p>
         <button type="button" 
                 class="btn btn-primary rounded-pill" 
-                data-bs-toggle="modal" 
-                data-bs-target="#addTourModal">
+                (click)="openAddModal()">
           <i class="bi bi-plus-circle me-1"></i> Add Your First Tour
         </button>
       </div>
@@ -86,7 +88,9 @@
   </div>
 
   <!-- Add Tour Modal Component -->
-  <app-add-tour (tourAdded)="onTourAdded($event)"></app-add-tour>
+  <app-add-tour 
+    (tourAdded)="onTourAdded()"
+  ></app-add-tour>
 
   <!-- Success Toast -->
   <div class="position-fixed top-0 end-0 p-3" style="z-index: 1055">
