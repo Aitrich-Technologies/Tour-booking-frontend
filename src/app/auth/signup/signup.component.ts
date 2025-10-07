@@ -1,7 +1,9 @@
 import { CommonModule } from '@angular/common';
-import { Component } from '@angular/core';
+import { AfterViewInit, Component, inject, OnDestroy, OnInit } from '@angular/core';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
+import { AuthService } from '../services/auth.service';
+declare var bootstrap: any; // For Bootstrap modal
 
 @Component({
   selector: 'app-signup',
@@ -9,81 +11,97 @@ import { ActivatedRoute, Router } from '@angular/router';
   templateUrl: './signup.component.html',
   styleUrl: './signup.component.css'
 })
-export class SignupComponent {
-  signupForm: FormGroup;
-  loading = false;
-  tourId: string | null = null;
-  returnUrl = '/';
-
-  // private authService: AuthService,
-  // private bookingService: BookingService,
-  // private tourService: TourService,
-  constructor(
-    private fb: FormBuilder,
+export class SignupComponent implements OnInit, AfterViewInit, OnDestroy{
+  private fb = inject(FormBuilder);
+  private router = inject(Router);
+  private userServie = inject(AuthService);
   
-    private router: Router,
-    private route: ActivatedRoute
-  ) {
+  signupForm!: FormGroup;
+  loading = false;
+  private modalInstance: any;
 
-    this.signupForm = this.fb.group({
-      firstName: ['', [Validators.required, Validators.minLength(2)]],
-      lastName: ['', [Validators.required, Validators.minLength(2)]],
-      gender: ['', [Validators.required]],
-      dateOfBirth: ['', [Validators.required]],
-      role: ['Customer', [Validators.required]],
-      userName: ['', [Validators.required, Validators.minLength(4)]],
-      email: ['', [Validators.required, Validators.email]],
-      telephoneNo: ['', [Validators.required]],
-      password: ['', [Validators.required, Validators.minLength(6)]]
-    });
+  ngOnInit(): void {
+    this.initForm();
   }
 
-  ngOnInit() {
-    // Get query parameters
-    this.route.queryParams.subscribe(params => {
-      this.returnUrl = params['returnUrl'] || '/';
-      this.tourId = params['tourId'] || null;
-    });
-  }
-
-  onSubmit() {
-    // if (this.signupForm.valid) {
-    //   this.loading = true;
+  ngAfterViewInit(): void {
+    // Initialize and auto-open the modal
+    const modalElement = document.getElementById('signupModal');
+    if (modalElement) {
+      this.modalInstance = new bootstrap.Modal(modalElement, {
+        backdrop: 'static', // Prevent closing by clicking outside
+        keyboard: true // Allow closing with ESC key
+      });
       
-    //   try {
-    //     // Signup user
-    //     const user = this.authService.signup(this.signupForm.value);
-        
-    //     // Check if there's a pending booking tour
-    //     const pendingTourId = this.authService.getPendingBookingTour();
-        
-    //     if (pendingTourId || this.tourId) {
-    //       // Initialize booking flow
-    //       const selectedTourId = pendingTourId || this.tourId!;
-    //       this.bookingService.initializeBooking(selectedTourId, user.id);
-          
-    //       // Clear pending tour
-    //       this.authService.clearPendingBookingTour();
-          
-    //       // Navigate to booking form
-    //       this.router.navigate(['/booking/add-booking']);
-    //     } else {
-    //       // Navigate to return URL or home
-    //       this.router.navigate([this.returnUrl]);
-    //     }
-        
-    //   } catch (error) {
-    //     console.error('Signup failed:', error);
-    //   } finally {
-    //     this.loading = false;
-    //   }
-    // }
+      // Auto-open modal when component loads
+      this.modalInstance.show();
+
+      // Listen for modal close event to navigate away
+      modalElement.addEventListener('hidden.bs.modal', () => {
+        // Navigate back to home or previous page when modal closes
+        this.router.navigate(['/']);
+      });
+    }
   }
 
-  goToLogin() {
-    this.router.navigate(['/auth/login'], {
-      queryParams: { returnUrl: this.returnUrl, tourId: this.tourId }
+  initForm(): void {
+    this.signupForm = this.fb.group({
+      firstName: ['', Validators.required],
+      lastName: ['', Validators.required],
+      gender: ['', Validators.required],
+      dateOfBirth: ['', Validators.required],
+      role: ['', Validators.required],
+      userName: ['', Validators.required],
+      email: ['', [Validators.required, Validators.email]],
+      telephoneNo: ['', Validators.required],
+      password: ['', [Validators.required, Validators.minLength(8)]]
     });
+  }
+
+  onSubmit(): void {
+    if (this.signupForm.valid) {
+      this.loading = true;
+      
+      // Your signup API call here
+      console.log('Signup Data:', this.signupForm.value);
+      this.userServie.register(this.signupForm.value).subscribe({
+        next: (response) => {
+          console.log('Signup successful:', response);  
+        },
+        error: (error) => {
+          console.error('Signup error:', error);
+          this.loading = false;
+        }
+      });
+      
+      // Simulate API call
+      setTimeout(() => {
+        this.loading = false;
+        
+        // After successful signup:
+        this.closeModal();
+        // Navigate to booking or dashboard
+        this.router.navigate(['/bookings']);
+      }, 2000);
+    }
+  }
+
+  goToLogin(): void {
+    this.closeModal();
+    this.router.navigate(['/auth/login']);
+  }
+
+  closeModal(): void {
+    if (this.modalInstance) {
+      this.modalInstance.hide();
+    }
+  }
+
+  ngOnDestroy(): void {
+    // Clean up modal instance
+    if (this.modalInstance) {
+      this.modalInstance.dispose();
+    }
   }
 
 }
