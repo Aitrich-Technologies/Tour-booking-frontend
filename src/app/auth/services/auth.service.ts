@@ -268,4 +268,30 @@ export class AuthService {
     console.error('Auth Error:', errorMessage);
     return throwError(() => new Error(errorMessage));
   }
+
+  forgetPassword(email: string): Observable<any> {
+    this.isLoading.set(true);
+    return this.http.post(`${this.API_BASE}/User/ForgotPassword`, { email }).pipe(
+      tap(() => {
+        this.isLoading.set(false);
+      }),
+      catchError(error => {
+        this.isLoading.set(false);
+        return this.handleError(error);
+      })
+    );  
+  }
+
+  resetPassword(data: { email: string; newPassword: string }): Observable<any> {  
+    this.isLoading.set(true);
+    return this.http.post(`${this.API_BASE}/User/ResetPassword`, data).pipe(
+      tap(() => {
+        this.isLoading.set(false);
+      }),
+      catchError(error => {
+        this.isLoading.set(false);
+        return this.handleError(error);
+      })
+    );  
+  }
 }

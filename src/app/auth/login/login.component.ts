@@ -12,11 +12,18 @@ import { CommonModule } from '@angular/common';
 })
 export class LoginComponent {
 
-  username: string = '';
+username: string = '';
   password: string = '';
   rememberMe: boolean = false;
   showPassword: boolean = false;
   loading: boolean = false;
+
+  // Forgot Password Properties
+  showForgotPasswordModal: boolean = false;
+  forgotPasswordEmail: string = '';
+  forgotPasswordLoading: boolean = false;
+  forgotPasswordSuccess: boolean = false;
+  forgotPasswordError: string = '';
 
   private authService = inject(AuthService);
   private router = inject(Router);
@@ -34,28 +41,59 @@ export class LoginComponent {
         password: this.password,
         rememberMe: this.rememberMe
       });
+      
       this.authService.login({ userName: this.username, password: this.password }).subscribe({
         next: (response) => {
           console.log('Login successful:', response);
-          // Handle successful login, e.g., navigate to dashboard
-
+          this.loading = false;
+          this.router.navigate(['/']);
         },
         error: (error) => {
           console.error('Login failed:', error);
+          this.loading = false;
           // Handle login error, e.g., show error message
         }
       });
-
-      setTimeout(() => {
-        this.loading = false;
-        // Navigate to booking or dashboard
-        this.router.navigate(['/']);
-      }, 2000);
-
-
-
-      // Add your authentication logic here
     }
   }
 
+  // Open Forgot Password Modal
+  openForgotPasswordModal() {
+    this.showForgotPasswordModal = true;
+    this.forgotPasswordEmail = '';
+    this.forgotPasswordSuccess = false;
+    this.forgotPasswordError = '';
+  }
+
+  // Close Forgot Password Modal
+  closeForgotPasswordModal() {
+    this.showForgotPasswordModal = false;
+    this.forgotPasswordEmail = '';
+    this.forgotPasswordSuccess = false;
+    this.forgotPasswordError = '';
+  }
+
+  // Submit Forgot Password Request
+  onForgotPasswordSubmit() {
+    if (!this.forgotPasswordEmail) {
+      this.forgotPasswordError = 'Please enter your email address';
+      return;
+    }
+
+    this.forgotPasswordLoading = true;
+    this.forgotPasswordError = '';
+
+    this.authService.forgetPassword(this.forgotPasswordEmail).subscribe({
+      next: (response) => {
+        console.log('Forgot password request successful:', response);
+        this.forgotPasswordLoading = false;
+        this.forgotPasswordSuccess = true;
+      },
+      error: (error) => {
+        console.error('Forgot password request failed:', error);
+        this.forgotPasswordLoading = false;
+        this.forgotPasswordError = error.error?.message || 'Failed to send reset instructions. Please try again.';
+      }
+    });
+  }
 }

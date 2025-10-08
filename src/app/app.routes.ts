@@ -15,18 +15,23 @@ export const routes: Routes = [
     },
     {
         path: 'bookings',
-         canActivate: [roleGuard([UserRole.CUSTOMER])],
+        // canActivate: [roleGuard([UserRole.CUSTOMER])],
         loadChildren: () => import('./booking/booking-routes')
             .then(r => r.BOOKING_ROUTES)
     },
     {
         path: 'auth',
         loadChildren: () => import('./auth/auth-routes')
-        .then(r => r.AUTH_ROUTES)
+            .then(r => r.AUTH_ROUTES)
     },
-        {
+    {
         path: 'tour',
         loadChildren: () => import('./tour/tour-routes')
             .then(r => r.TOUR_ROUTES)
+    },
+    {
+        path: 'consultants',
+        loadComponent: () => import('./shared/consultant-dashboard/consultant-dashboard.component')
+            .then(c => c.ConsultantDashboardComponent)
     },
 ];
