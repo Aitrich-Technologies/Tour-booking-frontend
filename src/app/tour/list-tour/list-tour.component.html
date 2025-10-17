@@ -23,6 +23,7 @@
             <th scope="col" >#</th>
             <th scope="col">Title</th>
             <th scope="col">Description</th>
+            <th scope="col">Destination</th>
             <th scope="col">Price</th>
             <th scope="col">Status</th>
             <th scope="col" style="width: 150px;">Actions</th>
@@ -40,7 +41,12 @@
               </span>
             </td>
             <td>
-              <span class="fw-bold text-success">${{ tour.price }}</span>
+              <span>
+                {{ tour.destinationName }}
+              </span>
+            </td>
+            <td>
+              <span class="fw-bold text-success">{{ tour.price | currency:'INR':'symbol':'1.0-0' }}</span>
             </td>
             <td>
               <span class="text-uppercase">

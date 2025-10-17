@@ -5,6 +5,8 @@ import { CommonModule } from '@angular/common';
 import { FormsModule, NgForm } from '@angular/forms';
 import { BookingService } from '../../booking/services/booking.service';
 import { Notes } from '../model/notes';
+import { Terms } from '../model/terms';
+import { TourBooking } from '../../booking/model/tourBooking';
 
 @Component({
   selector: 'app-agency-tour-detail',
@@ -13,6 +15,8 @@ import { Notes } from '../model/notes';
   styleUrl: './agency-tour-detail.component.css'
 })
 export class AgencyTourDetailComponent {
+goBack: any;
+
 
   @ViewChild('tourNoteForm') form: any;
 getDestinationName(arg0: any) {
@@ -24,9 +28,9 @@ throw new Error('Method not implemented.');
 
    tourId: string = '';
   tour: any;
-  terms: any[] = [];
-  notes: any[] = [];
-  bookings: any[] = [];
+  terms: Terms[] = [];
+  notes: Notes[] = [];
+  bookings: TourBooking[] = [];
   loading: boolean = true;
   tourNoteForm!: NgForm;
   
@@ -37,9 +41,10 @@ throw new Error('Method not implemented.');
   showAddNote: boolean = false;
 
   tourNotesData: Notes = {
+    id: '',
     tourId: '',
     tourNotes: '',
-    status: 'Active',
+    status: '',
   }
 
 
@@ -58,9 +63,6 @@ throw new Error('Method not implemented.');
     console.log("Loaded tour ID:", this.tourId);
     console.log("This is detail component ");
     console.log("this is test");
-    
-      
-    
     
   }
 
@@ -89,10 +91,19 @@ throw new Error('Method not implemented.');
   }
 
   loadBookings(): void {
-    this.bookingService.getTourBookings(this.tourId).subscribe({
+    this.bookingService.getTourBookingByTourId(this.tourId).subscribe({
       next: (bookings) => this.bookings = bookings
     });
   }
+
+  changeStatus(data: string): void {
+    this.tourService.updateTourStatus(this.tourId).subscribe({
+      next: (updatedTour) => {
+        this.tour = updatedTour;
+        console.log('Tour status updated:', updatedTour);
+      }
+    });
+}
 
   addTerm(): void {
     if (this.newTerm.trim()) {
@@ -116,12 +127,11 @@ throw new Error('Method not implemented.');
 
   addNote(): void {
     if (this.form.valid) {
-
-
       const noteData = {
+        id: '',
         tourId: this.tourId,
         tourNotes: this.tourNotesData.tourNotes,
-        status: 'Active'
+        status: this.tourNotesData.status
 
       };
       console.log('Adding note:', noteData);
@@ -136,19 +146,19 @@ throw new Error('Method not implemented.');
   }
 
   deleteTerm(termId: string): void {
-    // this.tourService.deleteTourTerm(this.tourId, termId).subscribe({
-    //   next: () => this.loadTermsAndNotes()
-    // });
+    this.tourService.deleteTourTerm( termId).subscribe({
+      next: () => this.loadTermsAndNotes()
+    });
   }
 
-  deleteNote(noteId: string): void {
-    // this.tourService.deleteTourNote(this.tourId, noteId).subscribe({
-    //   next: () => this.loadTermsAndNotes()
-    // });
+  deleteNote(id: string): void {
+    this.tourService.deleteTourNote(id).subscribe({
+      next: () => this.loadTermsAndNotes()
+    });
   }
 
   editTour(): void {
-    this.router.navigate(['/tours', this.tourId, 'edit']);
+    this.router.navigate(['/add-tour/', this.tourId, 'edit']);
   }
 
 }

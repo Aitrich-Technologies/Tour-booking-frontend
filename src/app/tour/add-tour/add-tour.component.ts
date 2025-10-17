@@ -9,6 +9,7 @@ import { DestinationStore } from '../../destination/store/destination.store';
 import { TourServiceService } from '../services/tour-service.service';
 import { User } from '../../auth/model/user';
 import { Tour } from '../model/tour';
+import { AuthService } from '../../auth/services/auth.service';
 
 declare var bootstrap: any;
 
@@ -39,15 +40,6 @@ export class AddTourComponent {
   customers: User[] = [];
   consultants: User[] = [];
   
-  // Tour status options with display names
-statusOptions = [
-  { value: 'Save', label: 'Save', icon: 'save', color: 'secondary' },
-  { value: 'Submit', label: 'Submit', icon: 'send', color: 'primary' },
-  { value: 'Approved', label: 'Approved', icon: 'check-circle', color: 'success' },
-  { value: 'On Hold', label: 'On Hold', icon: 'pause-circle', color: 'warning' },
-  { value: 'Closed', label: 'Closed', icon: 'x-circle', color: 'dark' },
-  { value: 'Cancelled', label: 'Cancelled', icon: 'x-octagon', color: 'danger' }
-];
 
   // TourStatus = TourStatus; // Expose enum to template
   
@@ -56,11 +48,16 @@ statusOptions = [
   minDepartureDate: string = '';
   errorMessage: string | null = null;
   isCustomizedTour = false;
+  isConsultant = false;
+  filteredConsultants: any[] = []
 
   private destinationService = inject(DestinationService);
   private tourService = inject(TourServiceService);
+  private authService = inject(AuthService);
   private destroy$ = new Subject<void>();
   readonly store = inject(DestinationStore);
+
+  currentUser = this.authService.currentUser();
 
   tourData: TourData = {
     title: '',
@@ -71,8 +68,8 @@ statusOptions = [
     departureDate: '',
     arrivalDate: '',
     customerId: '',
-    consultantId: '',
-    status: ''
+    consultantId: this.currentUser?.id,
+    status: 'SAVE'
   };
 
   ngOnInit() {
@@ -100,7 +97,7 @@ statusOptions = [
 
     this.store.loadDestinations();
     this.getAllCustomers();
-    this.getAllConsultants();
+    // this.getAllConsultants();
 
     // Set minimum departure date to today
     const today = new Date();
@@ -116,6 +113,10 @@ statusOptions = [
       });
     }
   }
+
+  //   isAgencyUser(): boolean {
+  //   return this.authService.hasRole('AGENCY');
+  // }
 
   ngOnDestroy() {
     this.destroy$.next();
@@ -135,18 +136,19 @@ statusOptions = [
     });
   }
 
-  getAllConsultants() {
-    this.tourService.getAllConsultants().subscribe({
-      next: (consultants) => {
-        this.consultants = consultants;
-        console.log('Consultants loaded:', this.consultants);
-      },
-      error: (error) => {
-        console.error('Error loading consultants:', error);
-        this.showErrorToast('Failed to load consultants');
-      }
-    });
-  }
+// getAllConsultants() {
+//   this.tourService.getAllConsultants().subscribe({
+//     next: (consultants) => {
+//       this.consultants = consultants;
+//       // filtering consultants with role 'CONSULTANT'
+//       this.filteredConsultants = consultants.filter(cons => cons.role === 'CONSULTANT');
+//     },
+//     error: (error) => {
+//       console.error('Error loading consultants:', error);
+//       this.showErrorToast('Failed to load consultants');
+//     }
+//   });
+// }
 
   calculateArrivalDate() {
     if (this.tourData.departureDate && this.tourData.noOfNights) {

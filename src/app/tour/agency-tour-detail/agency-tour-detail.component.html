@@ -77,8 +77,7 @@
             <li *ngFor="let term of terms; let i = index" 
                 class="list-group-item d-flex justify-content-between align-items-start">
               <div class="ms-2 me-auto">
-                <div class="fw-medium">Term {{ i + 1 }}</div>
-                <p class="mb-0 text-muted">{{ term.content }}</p>
+                <p class="mb-0 text-muted">{{ term.terms }}</p>
               </div>
               <button class="btn btn-outline-danger btn-sm" (click)="deleteTerm(term.id)">
                 <i class="bi bi-trash"></i>
@@ -115,8 +114,20 @@
                 rows="3"></textarea>
               
             </div>
+            <!-- Status in dropdown 'TO_BE_PRINTED' && 'NOT_TO_BE_PRINTED' -->
+            <div class="mb-3">
+              <select class="form-select" 
+                      [(ngModel)]="tourNotesData.status" 
+                      name="status"
+                      required>
+                <option value="" disabled>Select Status</option>
+                <option value="TO_BE_PRINTED">To be printed</option>
+                <option value="NOT_TO_BE_PRINTED">Not to be printed</option>
+              </select>
+            </div>
+
             <div class="d-flex gap-2">
-              <button class="btn btn-primary" type="submit" (click)="addNote()">
+              <button class="btn btn-primary" type="submit">
                 <i class="bi bi-check-circle me-2"></i>Save
               </button>
               <button class="btn btn-secondary" (click)="showAddNote = false">
@@ -132,10 +143,10 @@
               <div class="card-body">
                 <div class="d-flex justify-content-between align-items-start">
                   <div class="flex-grow-1">
-                    <p class="mb-2">{{ note.content }}</p>
+                    <p class="mb-2">{{ note.tourNotes }}</p>
                     <small class="text-muted">
                       <i class="bi bi-calendar3 me-1"></i>
-                      {{ note.createdAt | date:'medium' }}
+                      <!-- {{ note.createdAt | date:'medium' }} -->
                     </small>
                   </div>
                   <button class="btn btn-outline-danger btn-sm ms-3" (click)="deleteNote(note.id)">
@@ -151,60 +162,25 @@
         </div>
       </div>
     </section>
-
-    <!-- Bookings Section -->
-    <section class="bookings mb-5">
-      <div class="card border-0 shadow-sm">
-        <div class="card-header bg-white border-bottom py-3">
-          <h2 class="h4 mb-0">Recent Bookings</h2>
-        </div>
-        <div class="card-body p-0">
-          <div class="table-responsive">
-            <table class="table table-hover mb-0">
-              <thead class="table-light">
-                <tr>
-                  <th scope="col">
-                    <i class="bi bi-person me-2"></i>Customer
-                  </th>
-                  <th scope="col">
-                    <i class="bi bi-calendar-event me-2"></i>Date
-                  </th>
-                  <th scope="col">
-                    <i class="bi bi-info-circle me-2"></i>Status
-                  </th>
-                  <th scope="col">
-                    <i class="bi bi-currency-dollar me-2"></i>Amount
-                  </th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr *ngFor="let booking of bookings">
-                  <td class="fw-medium">{{ booking.customerName }}</td>
-                  <td>{{ booking.date | date:'shortDate' }}</td>
-                  <td>
-                    <span class="badge" 
-                          [ngClass]="{
-                            'bg-success': booking.status === 'confirmed',
-                            'bg-warning': booking.status === 'pending',
-                            'bg-danger': booking.status === 'cancelled'
-                          }">
-                      {{ booking.status | titlecase }}
-                    </span>
-                  </td>
-                  <td class="fw-bold text-success">{{ booking.amount | currency }}</td>
-                </tr>
-                <tr *ngIf="bookings.length === 0">
-                  <td colspan="4" class="text-center text-muted py-4">
-                    No bookings yet
-                  </td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
-        </div>
-      </div>
-    </section>
   </div>
+
+  <!-- Change tour status (SAVE,SUBMIT,APPROVED,ONHOLD,CLOSED,CANCELLED) -->
+  <div class="fixed-bottom bg-white border-top p-3 d-flex justify-content-end shadow-lg">
+    <div class="d-flex gap-2">
+      <button class="btn btn-secondary" (click)="goBack()">
+        <i class="bi bi-arrow-left-circle me-2"></i>Back
+      </button>
+      <button class="btn btn-danger" (click)="changeStatus(tourId)">
+        <i class="bi bi-x-circle me-2"></i>Cancel Tour
+      </button>
+      <button class="btn btn-warning text-white" (click)="changeStatus(tourId)">
+        <i class="bi bi-pause-circle me-2"></i>Put On Hold
+      </button>
+      <button class="btn btn-success" (click)="changeStatus(tourId)">
+        <i class="bi bi-check-circle me-2"></i>Close Tour
+      </button>
+    </div>
+   
 </div>
 
 <!-- Loading Spinner -->

@@ -80,7 +80,12 @@
         Discover a variety of tours and attractions tailored to your interests.
       </p>
 
-      <app-list-tour></app-list-tour>
+          <app-tour-catalog 
+      [showHeader]="false"
+      [showViewAll]="true"
+      [limit]="6"
+      [compact]="true">
+    </app-tour-catalog>
       
     </div>
   </section>

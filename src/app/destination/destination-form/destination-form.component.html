@@ -1,22 +1,31 @@
 <div class="modal fade" id="addDestinationModal" tabindex="-1" aria-labelledby="addDestinationModalLabel" aria-hidden="true">
-  <div class="modal-dialog modal-lg">
-    <div class="modal-content">
+  <div class="modal-dialog modal-lg modal-dialog-centered">
+    <div class="modal-content border-0 shadow-lg">
       
-      <div class="modal-header">
-        <h5 class="modal-title" id="addDestinationModalLabel">{{ modalTitle }}</h5>
-        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      <!-- Modern Header with Gradient -->
+      <div class="modal-header border-0 bg-gradient position-relative" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 1.25rem;">
+        <div>
+          <h5 class="modal-title text-dark fw-bold mb-1" id="addDestinationModalLabel">
+            <i class="bi" [ngClass]="isEditMode ? 'bi-pencil-square' : 'bi-plus-circle-fill'" class="me-2"></i>
+            {{ modalTitle }}
+          </h5>
+          <p class="text-dark-50 mb-0" style="font-size: 0.8rem;">{{ isEditMode ? 'Update destination details' : 'Add a new travel destination' }}</p>
+        </div>
+        <button type="button" class="btn-close btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
       </div>
 
-      <div class="modal-body">
+      <div class="modal-body p-3" style="background: #f8f9fa;">
         <form #destinationForm="ngForm" (ngSubmit)="onSubmit(destinationForm)">
           
-          <!-- Name Field -->
+          <!-- Name Field with Modern Styling -->
           <div class="mb-3">
-            <label for="name" class="form-label">
-              Destination Name <span class="text-danger">*</span>
+            <label for="name" class="form-label fw-semibold text-dark d-flex align-items-center small">
+              <i class="bi bi-geo-alt-fill text-primary me-2"></i>
+              Destination Name 
+              <span class="text-danger ms-1">*</span>
             </label>
             <input type="text" 
-                   class="form-control" 
+                   class="form-control form-control-sm border-2 shadow-sm" 
                    id="name" 
                    name="name"
                    [(ngModel)]="name"
@@ -24,96 +33,134 @@
                    required
                    minlength="2"
                    placeholder="e.g., Maldives, Bali, Dubai"
+                   style="border-radius: 8px; transition: all 0.3s ease;"
                    [class.is-invalid]="nameField.invalid && (nameField.dirty || nameField.touched)">
             <div class="invalid-feedback" *ngIf="nameField.invalid && (nameField.dirty || nameField.touched)">
-              <div *ngIf="nameField.errors?.['required']">Destination name is required</div>
-              <div *ngIf="nameField.errors?.['minlength']">Name must be at least 2 characters</div>
+              <i class="bi bi-exclamation-circle me-1"></i>
+              <span *ngIf="nameField.errors?.['required']">Destination name is required</span>
+              <span *ngIf="nameField.errors?.['minlength']">Name must be at least 2 characters</span>
             </div>
           </div>
           
-          <!-- Description Field -->
+          <!-- Description Field with Modern Styling -->
           <div class="mb-3">
-            <label for="city" class="form-label">
-              Description <span class="text-danger">*</span>
+            <label for="city" class="form-label fw-semibold text-dark d-flex align-items-center small">
+              <i class="bi bi-card-text text-primary me-2"></i>
+              Description 
+              <span class="text-danger ms-1">*</span>
             </label>
-            <textarea class="form-control" 
+            <textarea class="form-control form-control-sm border-2 shadow-sm" 
                       id="city" 
                       name="city"
                       [(ngModel)]="city"
                       #cityField="ngModel"
                       required
                       minlength="20"
-                      rows="4" 
+                      rows="3" 
                       placeholder="Describe the destination, activities, and what's included..."
+                      style="border-radius: 8px; transition: all 0.3s ease; resize: none;"
                       [class.is-invalid]="cityField.invalid && (cityField.dirty || cityField.touched)"></textarea>
             <div class="invalid-feedback" *ngIf="cityField.invalid && (cityField.dirty || cityField.touched)">
-              <div *ngIf="cityField.errors?.['required']">Description is required</div>
-              <div *ngIf="cityField.errors?.['minlength']">Description must be at least 20 characters</div>
+              <i class="bi bi-exclamation-circle me-1"></i>
+              <span *ngIf="cityField.errors?.['required']">Description is required</span>
+              <span *ngIf="cityField.errors?.['minlength']">Description must be at least 20 characters</span>
+            </div>
+            <div class="form-text mt-1">
+              <small class="text-muted" style="font-size: 0.75rem;">{{ city.length || 0 }} / 20 characters minimum</small>
             </div>
           </div>
 
-          <!-- Image Upload Field -->
+          <!-- Image Upload Field with Drag & Drop Style -->
           <div class="mb-3">
-            <label for="imageUrl" class="form-label">
+            <label for="imageUrl" class="form-label fw-semibold text-dark d-flex align-items-center small">
+              <i class="bi bi-image text-primary me-2"></i>
               Image Upload 
-              <span class="text-danger" *ngIf="!isEditMode">*</span>
-              <span class="text-muted" *ngIf="isEditMode">(Optional - leave empty to keep current image)</span>
+              <span class="text-danger ms-1" *ngIf="!isEditMode">*</span>
+              <span class="badge bg-info ms-2 text-white" style="font-size: 0.65rem;" *ngIf="isEditMode">Optional</span>
             </label>
-            <input type="file" 
-                   class="form-control" 
-                   id="imageUrl" 
-                   name="imageUrl"
-                   #imageField
-                   accept="image/*"
-                   (change)="onFileSelect($event)"
-                   [class.is-invalid]="!imageUrl && !isEditMode && destinationForm.submitted">
-            <div class="invalid-feedback" *ngIf="!imageUrl && !isEditMode && destinationForm.submitted">
-              <div>Image is required</div>
+            
+            <div class="position-relative">
+              <input type="file" 
+                     class="form-control form-control-sm border-2 shadow-sm" 
+                     id="imageUrl" 
+                     name="imageUrl"
+                     #imageField
+                     accept="image/*"
+                     (change)="onFileSelect($event)"
+                     style="border-radius: 8px; padding: 0.5rem; cursor: pointer;"
+                     [class.is-invalid]="!imageUrl && !isEditMode && destinationForm.submitted">
+              <div class="position-absolute top-50 end-0 translate-middle-y me-2" style="pointer-events: none;">
+                <i class="bi bi-cloud-upload fs-5 text-primary"></i>
+              </div>
             </div>
-            <div class="form-text">
-              <small class="text-muted">
-                <i class="bi bi-info-circle me-1"></i>
+            
+            <div class="invalid-feedback" *ngIf="!imageUrl && !isEditMode && destinationForm.submitted">
+              <i class="bi bi-exclamation-circle me-1"></i>
+              Image is required for new destinations
+            </div>
+            
+            <div class="alert alert-light border-0 mt-2 shadow-sm py-2" style="border-radius: 8px; background: white;">
+              <i class="bi bi-info-circle text-info me-2"></i>
+              <small class="text-muted" style="font-size: 0.75rem;">
                 Use high-quality images (recommended: 400x300px or similar ratio, max 5MB)
               </small>
             </div>
           </div>
 
-          <!-- Image Preview -->
+          <!-- Image Preview with Modern Card -->
           <div class="mb-3" *ngIf="imageUrl">
-            <label class="form-label">Image Preview</label>
-            <div class="border rounded p-2 bg-light">
-              <img [src]="imageUrl" 
-                   [alt]="name || 'Destination preview'"
-                   class="img-thumbnail d-block mx-auto"
-                   style="max-height: 200px; max-width: 100%; object-fit: contain;"
-                   (error)="onImageError($event)">
+            <label class="form-label fw-semibold text-dark d-flex align-items-center small">
+              <i class="bi bi-eye text-primary me-2"></i>
+              Image Preview
+            </label>
+            <div class="card border-0 shadow-sm" style="border-radius: 12px; overflow: hidden;">
+              <div class="card-body p-0 bg-white">
+                <img [src]="imageUrl" 
+                     [alt]="name || 'Destination preview'"
+                     class="w-100"
+                     style="max-height: 250px; object-fit: cover;"
+                     (error)="onImageError($event)">
+              </div>
+              <div class="card-footer bg-light border-0 text-center py-2">
+                <small class="text-muted" style="font-size: 0.75rem;">
+                  <i class="bi bi-check-circle-fill text-success me-1"></i>
+                  Image loaded successfully
+                </small>
+              </div>
             </div>
           </div>
 
-          <!-- Loading Spinner -->
-          <div *ngIf="isLoading" class="text-center mb-3">
-            <div class="spinner-border text-primary" role="status">
-              <span class="visually-hidden">Loading...</span>
+          <!-- Loading State with Modern Animation -->
+          <div *ngIf="isLoading" class="text-center py-3">
+            <div class="mb-2">
+              <div class="spinner-border text-primary" role="status" style="width: 2rem; height: 2rem;">
+                <span class="visually-hidden">Loading...</span>
+              </div>
             </div>
-            <p class="mt-2 text-muted">{{ isEditMode ? 'Updating' : 'Adding' }} destination...</p>
+            <h6 class="text-primary fw-semibold small">{{ isEditMode ? 'Updating' : 'Adding' }} destination...</h6>
+            <p class="text-muted mb-0" style="font-size: 0.75rem;">Please wait while we process your request</p>
           </div>
         </form>
       </div>
 
-      <div class="modal-footer">
+      <!-- Modern Footer with Enhanced Buttons -->
+      <div class="modal-footer border-0 bg-white p-3">
         <button type="button" 
-                class="btn btn-secondary rounded-pill" 
+                class="btn btn-light border shadow-sm px-3" 
                 data-bs-dismiss="modal"
+                style="border-radius: 8px; font-weight: 500;"
                 [disabled]="isLoading">
+          <i class="bi bi-x-circle me-2"></i>
           Cancel
         </button>
         <button type="button" 
-                class="btn btn-primary rounded-pill" 
+                class="btn btn-primary shadow px-3" 
                 (click)="onSubmit(destinationForm)"
+                style="border-radius: 8px; font-weight: 500; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border: none;"
                 [disabled]="isLoading">
           <span *ngIf="isLoading" class="spinner-border spinner-border-sm me-2" role="status"></span>
-          <i *ngIf="!isLoading" class="bi" [ngClass]="isEditMode ? 'bi-check-circle' : 'bi-plus-circle'" class="me-1"></i>
-          {{ submitButtonText }}
+          <i *ngIf="!isLoading" class="bi" [ngClass]="isEditMode ? 'bi-check-circle-fill' : 'bi-plus-circle-fill'"></i>
+          <span class="ms-2">{{ submitButtonText }}</span>
         </button>
       </div>
 

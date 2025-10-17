@@ -1,8 +1,10 @@
 import { Component, inject } from '@angular/core';
 import { TourServiceService } from '../services/tour-service.service';
 import { TourResponse } from '../model/tour';
-import { ActivatedRoute, RouterModule } from '@angular/router';
+import { ActivatedRoute, RouterModule, RouterOutlet } from '@angular/router';
 import { CommonModule } from '@angular/common';
+import { Notes } from '../model/notes';
+import { Terms } from '../model/terms';
 
 @Component({
   selector: 'app-tour-detail',
@@ -11,7 +13,9 @@ import { CommonModule } from '@angular/common';
   styleUrl: './tour-detail.component.css'
 })
 export class TourDetailComponent {
-   tour: TourResponse | null = null;
+  tour: TourResponse | null = null;
+  notes: Notes[] = [];
+  terms: Terms [] = [];
   tourId: string = '';
   isLoading: boolean = true;
   errorMessage: string = '';
@@ -26,6 +30,8 @@ export class TourDetailComponent {
       
       if (this.tourId) {
         this.fetchTourDetails();
+        this.getTourTermsByTourId(this.tourId);
+        this.getTourNotesByTourId(this.tourId);
       } else {
         this.errorMessage = 'No tour ID provided';
         this.isLoading = false;
@@ -39,8 +45,8 @@ export class TourDetailComponent {
 
     this.tourService.getTourById(this.tourId).subscribe({
       next: (tour: TourResponse) => {
-        console.log('Tour details:', tour);
         this.tour = tour;
+        console.log('Tour details:', tour);
         this.isLoading = false;
       },
       error: (error) => {
@@ -55,9 +61,35 @@ export class TourDetailComponent {
     return destinationName || 'Unknown Destination';
   }
 
+  getTourTermsByTourId(tourId:string) {
+    this.tourService.getTourTerms(tourId).subscribe({
+      next: (terms: Terms[]) => {
+        this.terms = terms
+
+        console.log('Tour terms:', terms);
+      },
+      error: (error) => {
+        console.error('Error fetching tour terms:', error);
+      }
+    });
+  }
+
+  getTourNotesByTourId(tourId: string) {
+    this.tourService.getTourNotes(tourId).subscribe({
+      next: (notes: Notes[]) => {
+        this.notes = notes
+        console.log('Tour notes:', notes);
+      },
+      error: (error) => {
+        console.error('Error fetching tour notes:', error);
+      }
+    });
+    
+  }
+
   onImageError(event: Event): void {
     const img = event.target as HTMLImageElement;
-    img.src = 'assets/images/placeholder-tour.jpg'; // Fallback image
+    img.src = 'assets/images/tour-placeholder.jpg'; // Fallback image
     // Or use a placeholder service:
     // img.src = 'https://via.placeholder.com/800x600?text=Tour+Image';
   }
