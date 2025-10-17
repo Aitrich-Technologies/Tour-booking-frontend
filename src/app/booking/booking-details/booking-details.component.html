@@ -1,0 +1,378 @@
+<div class="container py-5">
+  <!-- Back Button -->
+  <button class="btn btn-outline-secondary mb-4" (click)="goBack()">
+    <i class="bi bi-arrow-left me-2"></i>Back to Bookings
+  </button>
+
+  <!-- Loading State -->
+  <div *ngIf="isLoading" class="text-center py-5">
+    <div class="spinner-border text-primary" role="status">
+      <span class="visually-hidden">Loading...</span>
+    </div>
+    <p class="text-muted mt-3">Loading booking details...</p>
+  </div>
+
+  <!-- Error State -->
+  <div *ngIf="!isLoading && errorMessage && !successMessage" class="alert alert-danger" role="alert">
+    <i class="bi bi-exclamation-triangle me-2"></i>{{ errorMessage }}
+  </div>
+
+  <!-- Success Message -->
+  <div *ngIf="successMessage" class="alert alert-success alert-dismissible fade show" role="alert">
+    <i class="bi bi-check-circle me-2"></i>{{ successMessage }}
+    <button type="button" class="btn-close" (click)="successMessage = ''"></button>
+  </div>
+
+  <!-- Booking Details -->
+  <div *ngIf="!isLoading && booking" class="row">
+    <!-- Left Column - Booking Info -->
+    <div class="col-lg-4 mb-4">
+      <div class="card shadow-sm border-0 rounded-3 sticky-top" style="top: 20px;">
+        <div class="card-header bg-primary text-white">
+          <h5 class="mb-0 fw-bold">
+            <i class="bi bi-receipt me-2"></i>Booking Details
+          </h5>
+        </div>
+        <div class="card-body">
+          <!-- Status -->
+          <div class="mb-3">
+            <small class="text-muted d-block mb-1">Status</small>
+            <!-- <span class="badge fs-6" [ngClass]="getStatusBadgeClass(booking.status)">
+              {{ booking.status }}
+            </span> -->
+          </div>
+
+          <!-- Booking ID -->
+          <div class="mb-3">
+            <small class="text-muted d-block mb-1">Booking ID</small>
+            <div class="fw-semibold text-break">{{ booking.id }}</div>
+          </div>
+
+          <!-- Customer Name -->
+          <div class="mb-3">
+            <small class="text-muted d-block mb-1">Customer Name</small>
+            <div class="fw-semibold">{{ booking.firstName }}</div>
+          </div>
+
+          <!-- Booking Date -->
+          <div class="mb-3">
+            <small class="text-muted d-block mb-1">Booking Date</small>
+            <div class="fw-semibold">{{ booking.expiryDate| date:'fullDate' }}</div>
+          </div>
+
+          <hr>
+
+          <!-- Tour Details -->
+          <h6 class="fw-bold mb-3">Tour Information</h6>
+          
+          <div class="mb-3">
+            <small class="text-muted d-block mb-1">Tour Name</small>
+            <div class="fw-semibold">{{ booking.tour.tourName }}</div>
+          </div>
+
+          <div class="mb-3">
+            <small class="text-muted d-block mb-1">Destination</small>
+            <div class="fw-semibold">{{ booking.tour.destinationName }}</div>
+          </div>
+
+          <div class="mb-3">
+            <small class="text-muted d-block mb-1">Tour Duration</small>
+            <div class="fw-semibold">{{ booking.tour.noOfNights }} Nights</div>
+          </div>
+
+          <div class="mb-3">
+            <small class="text-muted d-block mb-1">Departure Date</small>
+            <div class="fw-semibold">{{ booking.tour.departureDate| date:'mediumDate' }}</div>
+          </div>
+
+          <div class="mb-3">
+            <small class="text-muted d-block mb-1">Return Date</small>
+            <div class="fw-semibold">{{ booking.tour.arrivalDate| date:'mediumDate' }}</div>
+          </div>
+
+          <hr>
+
+          <!-- Pricing -->
+          <h6 class="fw-bold mb-3">Pricing</h6>
+          
+          <div class="d-flex justify-content-between mb-2">
+            <span class="text-muted">Price per person:</span>
+            <span class="fw-semibold">₹{{ booking.tour.price| number:'1.2-2' }}</span>
+          </div>
+
+          <div class="d-flex justify-content-between mb-2">
+            <span class="text-muted">Total Participants:</span>
+            <span class="fw-semibold">{{ participants.length || 1 }}</span>
+          </div>
+
+          <hr>
+
+          <div class="d-flex justify-content-between">
+            <span class="fw-bold fs-5">Total Amount:</span>
+            <span class="fw-bold fs-5 text-primary">₹{{ getTotalAmount() | number:'1.2-2' }}</span>
+          </div>
+
+          <!-- Actions -->
+          <!-- <div class="mt-4" *ngIf="booking.status && booking.status.toString().toLowerCase() === 'pending'">
+            <button class="btn btn-danger w-100" (click)="cancelBooking()">
+              <i class="bi bi-x-circle me-2"></i>Cancel Booking
+            </button>
+          </div> -->
+        </div>
+      </div>
+    </div>
+
+    <!-- Right Column - Participants -->
+    <div class="col-lg-8">
+      <div class="card shadow-sm border-0 rounded-3">
+        <div class="card-header bg-white d-flex justify-content-between align-items-center">
+          <h5 class="mb-0 fw-bold">
+            <i class="bi bi-people me-2"></i>Participants
+            <span class="badge bg-primary ms-2">{{ participants.length }}</span>
+          </h5>
+          <button 
+            class="btn btn-primary btn-sm rounded-pill" 
+            (click)="toggleAddParticipant()"
+            *ngIf="!showAddParticipant">
+            <i class="bi bi-plus-circle me-1"></i>Add Participant
+          </button>
+        </div>
+
+        <div class="card-body">
+          <!-- Add/Edit Participant Form -->
+          <div *ngIf="showAddParticipant" class="card bg-light border-0 mb-4">
+            <div class="card-body">
+              <h6 class="fw-bold mb-3">
+                {{ editingParticipantId ? 'Edit Participant' : 'Add New Participant' }}
+              </h6>
+              
+              <form [formGroup]="participantForm" (ngSubmit)="saveParticipant()">
+                <div class="row g-3">
+                  <!-- First Name -->
+                  <div class="col-md-6">
+                    <label class="form-label">First Name *</label>
+                    <input 
+                      type="text" 
+                      class="form-control" 
+                      name="firstName"
+                      formControlName="firstName"
+                      [class.is-invalid]="participantForm.get('firstName')?.invalid && participantForm.get('firstName')?.touched">
+                    <div class="invalid-feedback">First name is required</div>
+                  </div>
+
+                  <!-- Last Name -->
+                  <div class="col-md-6">
+                    <label class="form-label">Last Name *</label>
+                    <input 
+                      type="text" 
+                      class="form-control" 
+                      name="lastName"
+                      formControlName="lastName"
+                      [class.is-invalid]="participantForm.get('lastName')?.invalid && participantForm.get('lastName')?.touched">
+                    <div class="invalid-feedback">Last name is required</div>
+                  </div>
+
+                  <!-- Email -->
+                  <div class="col-md-6">
+                    <label class="form-label">Email</label>
+                    <input 
+                      type="email" 
+                      class="form-control" 
+                      name="email"
+                      formControlName="email"
+                      [class.is-invalid]="participantForm.get('email')?.invalid && participantForm.get('email')?.touched">
+                    <div class="invalid-feedback">Valid email is required</div>
+                  </div>
+
+                  <!-- Gender -->
+                  <div class="col-md-6">
+                    <label class="form-label">Gender </label>
+                    <select 
+                      class="form-select" 
+                      name="gender"
+                      formControlName="gender"
+                      [class.is-invalid]="participantForm.get('gender')?.invalid && participantForm.get('gender')?.touched">
+                      <option value="">Select Gender</option>
+                      <option value="Male">Male</option>
+                      <option value="Female">Female</option>
+                      <option value="Other">Other</option>
+                    </select>
+                    <div class="invalid-feedback">Gender is required</div>
+                  </div>
+
+                  <!-- DOB -->
+                  <div class="col-md-6">
+                    <label class="form-label">Date of Birth </label>
+                    <input 
+                      type="date" 
+                      class="form-control" 
+                      name="dob"
+                      formControlName="dob"
+                      [class.is-invalid]="participantForm.get('dob')?.invalid && participantForm.get('dob')?.touched">
+                    <div class="invalid-feedback">Date of birth is required</div>
+                  </div>
+
+                  <!-- Nationality -->
+                  <div class="col-md-6">
+                    <label class="form-label">Citizenship</label>
+                    <input 
+                      type="text" 
+                      class="form-control" 
+                      name="citizenship"
+                      formControlName="citizenship"
+                      [class.is-invalid]="participantForm.get('citizenship')?.invalid && participantForm.get('citizenship')?.touched">
+                    <div class="invalid-feedback">Nationality is required</div>
+                  </div>
+
+                <!-- Place of Birth -->
+                  <div class="col-md-6">
+                    <label class="form-label">Place of Birth </label>
+                    <input 
+                      type="text" 
+                      class="form-control" 
+                      formControlName="placeOfBirth"
+                      [class.is-invalid]="participantForm.get('placeOfBirth')?.invalid && participantForm.get('placeOfBirth')?.touched">
+                    <div class="invalid-feedback">Place of birth is required</div>
+                  </div>
+
+                  <!-- Phone Number -->
+                  <div class="col-md-6">
+                    <label class="form-label">Phone Number </label>
+                    <input 
+                      type="text" 
+                      class="form-control" 
+                      name="phoneNumber"
+                      formControlName="phoneNumber"
+                      [class.is-invalid]="participantForm.get('phoneNumber')?.invalid && participantForm.get('phoneNumber')?.touched">
+                    <div class="invalid-feedback">Phone number is required</div>
+                  </div>
+
+                  <!-- Passport Number (Optional) -->
+                  <div class="col-md-6">
+                    <label class="form-label">Passport Number</label>
+                    <input 
+                      type="text" 
+                      class="form-control" 
+                      name="passportNumber"
+                      formControlName="passportNumber"
+                      placeholder="Optional for international tours">
+                  </div>
+
+                  <!-- Issue Date -->
+                  <div class="col-md-6">
+                    <label class="form-label">Issue Date</label>
+                    <input 
+                      type="date" 
+                      class="form-control" 
+                      formControlName="issueDate"
+                      name="issueDate"
+                      rows="3"
+                      placeholder="Dietary restrictions, medical conditions, accessibility needs, etc.">
+                  </div>
+
+                  <!-- Expiry Date -->
+                  <div class="col-md-6">
+                    <label class="form-label">Expiry Date</label>
+                    <input 
+                      type="date" 
+                      class="form-control" 
+                      formControlName="expiryDate"
+                      name="expiryDate"
+                      rows="3"
+                      placeholder="Dietary restrictions, medical conditions, accessibility needs, etc.">  
+                  </div>
+
+                  <!-- Form Actions -->
+                  <div class="col-12">
+                    <div class="d-flex gap-2 justify-content-end">
+                      <button 
+                        type="button" 
+                        class="btn btn-outline-secondary"
+                        (click)="cancelEdit()"
+                        [disabled]="isSaving">
+                        Cancel
+                      </button>
+                      <button 
+                        type="submit" 
+                        class="btn btn-primary"
+                        [disabled]="participantForm.invalid || isSaving">
+                        <span *ngIf="isSaving" class="spinner-border spinner-border-sm me-2"></span>
+                        <i *ngIf="!isSaving" class="bi bi-check-circle me-1"></i>
+                        {{ editingParticipantId ? 'Update' : 'Add' }} Participant
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </form>
+            </div>
+          </div>
+
+          <!-- Participants List -->
+          <div *ngIf="participants.length > 0" class="row g-3">
+            <div class="col-md-6" *ngFor="let participant of participants; let i = index">
+              <div class="card border-0 shadow-sm h-100">
+                <div class="card-body">
+                  <div class="d-flex justify-content-between align-items-start mb-3">
+                    <h6 class="fw-bold mb-0">
+                      <i class="bi bi-person-circle me-2 text-primary"></i>
+                      Participant {{ i + 1 }}
+                    </h6>
+                    <div class="dropdown">
+                      <button 
+                        class="btn btn-sm btn-light" 
+                        type="button" 
+                        data-bs-toggle="dropdown">
+                        <i class="bi bi-three-dots-vertical"></i>
+                      </button>
+                      <ul class="dropdown-menu">
+                        <li>
+                          <a class="dropdown-item" (click)="editParticipant(participant)">
+                            <i class="bi bi-pencil me-2"></i>Edit
+                          </a>
+                        </li>
+                        <li>
+                          <a class="dropdown-item text-danger" (click)="deleteParticipant(participant.id)">
+                            <i class="bi bi-trash me-2"></i>Remove
+                          </a>
+                        </li>
+                      </ul>
+                    </div>
+                  </div>
+
+                  <div class="small">
+                    <div class="mb-2">
+                      <strong>Name:</strong> {{ participant.firstName }} {{ participant.lastName }}
+                    </div>
+                    <div class="mb-2">
+                      <strong>Gender:</strong> {{ participant.gender }}
+                    </div>
+                    <div class="mb-2">
+                      <strong>Place of Birth:</strong> {{ participant.placeOfBirth }}
+                    </div>
+                    <div class="mb-2" *ngIf="participant.passportNumber">
+                      <strong>Passport:</strong> {{ participant.passportNumber }}
+                    </div>
+                    <!-- <div *ngIf="participant.specialRequirements" class="mt-3">
+                      <strong class="d-block mb-1">Special Requirements:</strong>
+                      <p class="text-muted small mb-0">{{ participant.specialRequirements }}</p>
+                    </div> -->
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- No Participants State -->
+          <div *ngIf="participants.length === 0 && !showAddParticipant" class="text-center py-5">
+            <i class="bi bi-people" style="font-size: 3rem; color: #dee2e6;"></i>
+            <h6 class="text-muted mt-3">No participants added yet</h6>
+            <p class="text-muted small">Add participants to complete your booking</p>
+            <button class="btn btn-primary rounded-pill" (click)="toggleAddParticipant()">
+              <i class="bi bi-plus-circle me-2"></i>Add First Participant
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

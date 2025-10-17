@@ -1,0 +1,197 @@
+<div class="booking-container">
+
+  <!-- Loading Tour Info -->
+  <div class="tour-summary loading" *ngIf="loadingTour">
+    <div class="loading-spinner">
+      <div class="spinner"></div>
+      <p>Loading tour information...</p>
+    </div>
+  </div>
+
+  <div class="header">
+    <h1>Complete Your Booking</h1>
+    <p>Please fill in your details to proceed with the tour booking</p>
+  </div>
+
+  <form [formGroup]="bookingForm" (ngSubmit)="onSubmit()" class="booking-form">
+    <div class="info-box">
+      <p><strong>Important:</strong> Please ensure all information is accurate. If providing passport information, 
+        it must match your travel document exactly and be valid for at least 6 months from your travel date.</p>
+    </div>
+
+    <div class="form-section">
+      <h2>Tour Information</h2>
+      <div class="tour-summary-section">
+        <div class="row align-items-center">
+          <div class="col-md-4 text-center">
+            <img *ngIf="selectedTour?.imageUrl" [src]="selectedTour?.imageUrl" [alt]="selectedTour?.tourName"
+              class="img-fluid rounded tour-image" />
+          </div>
+          <div class="col-md-8">
+            <h3 class="tour-title">{{ selectedTour?.tourName }}</h3>
+            <p class="tour-description">{{ selectedTour?.tourDescription }}</p>
+
+            <div class="row tour-details mt-3">
+              <div class="col-sm-6 mb-2" *ngIf="selectedTour?.destinationName">
+                <i class="bi bi-geo-alt text-primary me-2"></i>
+                <strong>Destination:</strong> {{ selectedTour?.destinationName }}
+              </div>
+              <div class="col-sm-6 mb-2" *ngIf="selectedTour?.noOfNights">
+                <i class="bi bi-clock text-primary me-2"></i>
+                <strong>Duration:</strong> {{ selectedTour?.noOfNights }}
+              </div>
+              <div class="col-sm-6 mb-2">
+                <i class="bi bi-currency-dollar text-primary me-2"></i>
+                <strong>Price:</strong> ${{ selectedTour?.price }} per person
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Personal Information Section -->
+    <div class="form-section">
+      <h2>Personal Information</h2>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label>First Name <span class="required">*</span></label>
+          <input type="text" formControlName="firstName" placeholder="Enter first name">
+          <div class="error-message"
+            *ngIf="bookingForm.get('firstName')?.invalid && bookingForm.get('firstName')?.touched">
+            First name is required
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label>Last Name <span class="required">*</span></label>
+          <input type="text" formControlName="lastName" placeholder="Enter last name">
+          <div class="error-message"
+            *ngIf="bookingForm.get('lastName')?.invalid && bookingForm.get('lastName')?.touched">
+            Last name is required
+          </div>
+        </div>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label>Gender <span class="required">*</span></label>
+          <select formControlName="gender">
+            <option value="">Select gender</option>
+            <option value="Male">Male</option>
+            <option value="Female">Female</option>
+            <option value="Other">Other</option>
+          </select>
+          <div class="error-message" *ngIf="bookingForm.get('gender')?.invalid && bookingForm.get('gender')?.touched">
+            Gender is required
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label>Date of Birth <span class="required">*</span></label>
+          <input type="date" formControlName="dob">
+          <div class="error-message" *ngIf="bookingForm.get('dob')?.invalid && bookingForm.get('dob')?.touched">
+            Date of birth is required
+          </div>
+        </div>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label>Place of Birth</label>
+          <select formControlName="placeOfBirth">
+            <option value="">Select city (optional)</option>
+            <option *ngFor="let city of cities" [value]="city">
+              {{ city }}
+            </option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label>Citizenship</label>
+          <select formControlName="citizenship">
+            <option value="">Select country (optional)</option>
+            <option *ngFor="let country of countries" [value]="country">
+              {{ country }}
+            </option>
+          </select>
+        </div>
+      </div>
+    </div>
+
+    <!-- Passport Information Section (Now Optional) -->
+    <div class="form-section">
+      <h2>Passport Information <span class="optional-badge">(Optional)</span></h2>
+      <p class="section-note">Only required for international travel</p>
+
+      <div class="form-row">
+        <div class="form-group full-width">
+          <label>Passport Number</label>
+          <input type="text" formControlName="passportNumber" placeholder="Enter passport number (if applicable)">
+        </div>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label>Issue Date</label>
+          <input type="date" formControlName="issueDate">
+        </div>
+
+        <div class="form-group">
+          <label>Expiry Date</label>
+          <input type="date" formControlName="expiryDate">
+        </div>
+      </div>
+    </div>
+
+    <!-- Booking Details Section -->
+    <div class="form-section">
+      <h2>Booking Details</h2>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label>Participant Type</label>
+          <select formControlName="participantType">
+            <option selected>Select</option>
+            <option value="Adult">Adult</option>
+            <option value="Staff">Staff</option>
+            <option value="Family">Family</option>
+            <option value="Player">Player</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label>Status</label>
+          <select formControlName="status">
+            <option value="SAVE">Save</option>
+            <option value="SUBMIT">Submit</option>
+            <option value="APPROVED">Approved</option>
+            <option value="ONHOLD">On Hold</option>
+            <option value="CLOSED">Closed</option>
+            <option value="CANCELLED">Cancelled</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group full-width">
+          <div class="checkbox-group">
+            <input type="checkbox" id="leadPassenger" formControlName="leadPassenger">
+            <label for="leadPassenger">This is the lead passenger</label>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Action Buttons -->
+    <div class="booking-actions">
+      <button type="button" (click)="goBack()" class="btn-secondary">
+        Back to Tours
+      </button>
+      <button type="submit" [disabled]="!bookingForm.valid || loading" class="btn-primary">
+        {{loading ? 'Processing...' : 'Complete Booking'}}
+      </button>
+    </div>
+  </form>
+</div>
