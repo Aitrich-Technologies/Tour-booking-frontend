@@ -1,0 +1,21 @@
+.form-control:focus {
+    border-color: #667eea !important;
+    box-shadow: 0 0 0 0.2rem rgba(102, 126, 234, 0.25) !important;
+  }
+  
+  .modal-content {
+    border-radius: 20px !important;
+  }
+  
+  .btn:hover:not(:disabled) {
+    transform: translateY(-2px);
+    transition: all 0.3s ease;
+  }
+  
+  .form-control, .form-select {
+    transition: all 0.3s ease;
+  }
+  
+  .form-control:hover:not(:disabled) {
+    border-color: #667eea;
+  }
