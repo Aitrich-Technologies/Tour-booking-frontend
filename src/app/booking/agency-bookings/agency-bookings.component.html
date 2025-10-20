@@ -1,0 +1,173 @@
+<div class="container py-4">
+  <!-- Header -->   
+  <div class="row mb-4">
+    <div class="col-12">
+      <h2 class="mb-3">
+        <i class="bi bi-calendar-check me-2"></i>Tour Bookings
+      </h2>
+      
+      <!-- Search and Filter -->
+      <div class="row g-3 mb-3">
+        <div class="col-md-8">
+          <div class="input-group">
+            <span class="input-group-text">
+              <i class="bi bi-search"></i>
+            </span>
+            <input 
+              type="text" 
+              class="form-control" 
+              placeholder="Search by passenger name or tour name..."
+              [(ngModel)]="searchTerm"
+              (input)="filterBookings()">
+          </div>
+        </div>
+        <div class="col-md-4">
+          <select 
+            class="form-select" 
+            [(ngModel)]="selectedStatus"
+            (change)="filterBookings()">
+            <option value="all">All Status</option>
+            <option value="SAVE">Saved</option>
+            <option value="CONFIRMED">Confirmed</option>
+            <option value="PENDING">Pending</option>
+            <option value="CANCELLED">Cancelled</option>
+          </select>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Loading State -->
+  <div *ngIf="loading" class="text-center my-5">
+    <div class="spinner-border text-primary" role="status" style="width: 3rem; height: 3rem;">
+      <span class="visually-hidden">Loading...</span>
+    </div>
+    <p class="mt-3">Loading bookings...</p>
+  </div>
+
+  <!-- Error State -->
+  <div *ngIf="error" class="alert alert-danger" role="alert">
+    <i class="bi bi-exclamation-triangle me-2"></i>
+    {{ error }}
+    <button class="btn btn-sm btn-outline-danger ms-3" (click)="loadBookings()">
+      <i class="bi bi-arrow-clockwise me-1"></i>Retry
+    </button>
+  </div>
+
+  <!-- No Results -->
+  <div *ngIf="!loading && filteredBookings.length === 0 && !error" class="text-center my-5">
+    <i class="bi bi-inbox" style="font-size: 4rem; color: #ccc;"></i>
+    <h4 class="mt-3">No bookings found</h4>
+    <p class="text-muted">Try adjusting your search or filters</p>
+  </div>
+
+  <!-- Bookings List -->
+  <div *ngIf="!loading && filteredBookings.length > 0" class="row">
+    <div class="col-12">
+      <div class="card shadow-sm">
+        <div class="card-body p-0">
+          <div class="list-group list-group-flush">
+            <div 
+              *ngFor="let booking of filteredBookings; let i = index" 
+              class="list-group-item list-group-item-action p-4"
+              [class.border-top]="i > 0">
+              
+              <div class="row align-items-center">
+                <!-- Passenger Info -->
+                <div class="col-md-3">
+                  <div class="d-flex align-items-center">
+                    <div class="avatar-circle bg-primary text-white me-3">
+                      {{ booking.firstName.charAt(0) }}{{ booking.lastName.charAt(0) }}
+                    </div>
+                    <div>
+                      <h6 class="mb-1">{{ booking.firstName }} {{ booking.lastName }}</h6>
+                      <small class="text-muted">
+                        <i class="bi bi-person me-1"></i>{{ booking.gender }}
+                      </small>
+                      <span *ngIf="booking.leadPassenger === 'true'" class="badge bg-warning text-dark ms-2">
+                        Lead
+                      </span>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Tour Info -->
+                <div class="col-md-4">
+                  <h6 class="mb-1 text-primary">
+                    <i class="bi bi-airplane me-1"></i>{{ booking.tour.tourName }}
+                  </h6>
+                  <small class="text-muted d-block">
+                    <i class="bi bi-calendar-event me-1"></i>
+                    {{ formatDate(booking.tour.departureDate) }} - {{ formatDate(booking.tour.arrivalDate) }}
+                  </small>
+                  <small class="text-muted">
+                    <i class="bi bi-moon-stars me-1"></i>{{ booking.tour.noOfNights }} Nights
+                  </small>
+                </div>
+
+                <!-- Details -->
+                <div class="col-md-3">
+                  <div class="mb-1">
+                    <small class="text-muted">Citizenship:</small>
+                    <strong class="ms-2">{{ booking.citizenship }}</strong>
+                  </div>
+                  <div class="mb-1">
+                    <small class="text-muted">Type:</small>
+                    <span class="badge bg-info ms-2">{{ booking.participantType }}</span>
+                  </div>
+                  <div>
+                    <small class="text-muted">Price:</small>
+                    <strong class="text-success ms-2">${{ booking.tour.price }}</strong>
+                  </div>
+                </div>
+
+                <!-- Status & Actions -->
+                <div class="col-md-2 text-end">
+                  <span class="badge mb-2" [ngClass]="getStatusBadgeClass(booking.status)">
+                    {{ booking.status }}
+                  </span>
+                  <div class="btn-group-vertical w-100" role="group">
+                    <button class="btn btn-sm btn-outline-primary" type="button"
+                      (click)="viewBookingDetails(booking.id)">
+                      <i class="bi bi-eye me-1"></i>View
+                    </button>
+                    <button class="btn btn-sm btn-outline-secondary" type="button">
+                      <i class="bi bi-pencil me-1"></i>Edit
+                    </button>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Expandable Details (Optional) -->
+              <div class="mt-3 pt-3 border-top">
+                <div class="row">
+                  <div class="col-md-6">
+                    <small class="text-muted d-block mb-1">
+                      <strong>Passport:</strong> {{ booking.passportNumber }}
+                    </small>
+                    <small class="text-muted d-block">
+                      <strong>Expiry:</strong> {{ formatDate(booking.expiryDate) }}
+                    </small>
+                  </div>
+                  <div class="col-md-6">
+                    <small class="text-muted d-block mb-1">
+                      <strong>DOB:</strong> {{ formatDate(booking.dob) }}
+                    </small>
+                    <small class="text-muted d-block">
+                      <strong>Place of Birth:</strong> {{ booking.placeOfBirth }}
+                    </small>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Results Count -->
+      <div class="mt-3 text-muted">
+        Showing {{ filteredBookings.length }} of {{ bookings.length }} bookings
+      </div>
+    </div>
+  </div>
+</div>

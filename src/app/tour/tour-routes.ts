@@ -1,5 +1,4 @@
 import { Routes } from '@angular/router';
-import { AddTourComponent } from '../tour/add-tour/add-tour.component';
 import { roleGuard } from '../auth/guards/role.guard';
 import { UserRole } from '../auth/services/auth.service';
 
@@ -25,10 +24,13 @@ export const TOUR_ROUTES: Routes = [
                 loadComponent: () => import('./agency-tour-detail/agency-tour-detail.component')
                     .then(c => c.AgencyTourDetailComponent)
             },
-            
+
         ]
-    },
-        {
+    }
+    ,
+    {path: 'add-tour/:id', canActivate: [roleGuard([UserRole.CONSULTANT])], loadComponent: () => import('./add-tour/add-tour.component').then(c => c.AddTourComponent)}
+    ,
+    {
         path: ':id',
         loadComponent: () => import('./tour-detail/tour-detail.component')
             .then(c => c.TourDetailComponent)

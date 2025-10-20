@@ -1,9 +1,9 @@
 import { Component, inject, Input, OnInit } from '@angular/core';
 import { TourServiceService } from '../services/tour-service.service';
-import { AuthService } from '../../auth/services/auth.service';
+import { AuthService, UserRole } from '../../auth/services/auth.service';
 import { Tour, TourResponse } from '../model/tour';
 import { CommonModule } from '@angular/common';
-import { RouterModule } from '@angular/router';
+import { Router, RouterModule } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 
 @Component({
@@ -14,8 +14,11 @@ import { FormsModule } from '@angular/forms';
 })
 export class TourCatalogComponent implements OnInit {
 
-  private tourService = inject(TourServiceService);
-  private authService = inject(AuthService);
+    private tourService = inject(TourServiceService);
+  authService = inject(AuthService);
+  private router = inject(Router);
+
+  UserRole = UserRole;
 
   // Input properties
   @Input() title: string = 'Available Tours';
@@ -23,8 +26,7 @@ export class TourCatalogComponent implements OnInit {
   @Input() showHeader: boolean = true;
   @Input() showViewAll: boolean = false;
   @Input() limit?: number;
-  @Input() compact: boolean = false; // For 4 columns layout
-
+  @Input() compact: boolean = false;
 
   // Data
   tours: TourResponse[] = [];
@@ -42,25 +44,72 @@ export class TourCatalogComponent implements OnInit {
   totalPages: number = 1;
 
   ngOnInit(): void {
-      console.log('Is authenticated?', this.authService.isAuthenticated());
-  console.log('Current user:', this.authService.currentUser());
-  this.loadTours();
+    console.log('Is authenticated?', this.authService.isAuthenticated());
+    console.log('Current user:', this.authService.currentUser());
+    this.loadTours();
   }
 
   loadTours(): void {
     this.isLoading = true;
+    console.log('Starting to load tours...');
+    
     this.tourService.getTour().subscribe({
       next: (tours) => {
-        // Only show active/available tours for public/customer
-        this.tours = tours.filter(tour => this.isTourAvailable(tour));
+        console.log('API Response - Total tours:', tours.length);
+        console.log('Tours data:', tours);
+        
+        // Filter tours based on availability and customer access
+        this.tours = tours.filter(tour => this.canViewTour(tour));
+        
+        console.log('After filtering - Tours to show:', this.tours.length);
+        
         this.filterTours();
         this.isLoading = false;
       },
       error: (error) => {
-        console.error('Error loading tours:', error);
+        console.error('API Error:', error);
+        console.error('Error status:', error.status);
+        console.error('Error message:', error.message);
         this.isLoading = false;
       }
     });
+  }
+
+  /**
+   * Check if the current user can view this tour
+   * Rules:
+   * 1. Tour must be available (future date)
+   * 2. If tour has no customerId (null), everyone can see it (public tour)
+   * 3. If tour has a customerId, only that specific customer can see it (private tour)
+   */
+  canViewTour(tour: TourResponse): boolean {
+    // First check if tour is available
+    if (!this.isTourAvailable(tour)) {
+      return false;
+    }
+
+    const currentUser = this.authService.currentUser();
+    
+    // If tour has no customerId, it's a public tour - everyone can see it
+    if (!tour.customerId) {
+      return true;
+    }
+
+    // If user is not logged in, they can't see private tours
+    if (!currentUser) {
+      return false;
+    }
+
+    // If tour has a customerId, only that customer can see it
+    // Also allow consultants/admins to see all tours
+    const userRole = currentUser.role?.toUpperCase();
+    
+    if (userRole === UserRole.CONSULTANT || userRole === 'ADMIN') {
+      return true; // Consultants and admins can see all tours
+    }
+
+    // For customers, check if the tour is assigned to them
+    return tour.customerId === currentUser.id;
   }
 
   filterTours(): void {
@@ -83,7 +132,6 @@ export class TourCatalogComponent implements OnInit {
   sortTours(): void {
     switch(this.sortBy) {
       case 'popular':
-        // Sort by some popularity metric (you can adjust this)
         this.filteredTours.sort((a, b) => (Number(b.id) || 0) - (Number(a.id) || 0));
         break;
       case 'price-low':
@@ -100,11 +148,9 @@ export class TourCatalogComponent implements OnInit {
   }
 
   updateDisplayedTours(): void {
-    // Apply limit if specified (for home page)
     if (this.limit) {
       this.displayedTours = this.filteredTours.slice(0, this.limit);
     } else {
-      // Apply pagination
       const startIndex = (this.currentPage - 1) * this.itemsPerPage;
       const endIndex = startIndex + this.itemsPerPage;
       this.displayedTours = this.filteredTours.slice(startIndex, endIndex);
@@ -142,10 +188,18 @@ export class TourCatalogComponent implements OnInit {
     return pages;
   }
 
+  handleTourClick(tour: TourResponse, event: Event): void {
+    this.router.navigate(['/tour', tour.id]);
+  }
+
+  getViewButtonText(): string {
+    return this.authService.isAuthenticated() 
+      ? 'View Details' 
+      : 'View & Book';
+  }
+
   // Helper methods
   isTourAvailable(tour: TourResponse): boolean {
-    // Add your logic to determine if tour is available
-    // For example: check if status is active, not past date, etc.
     if (tour.arrivalDate) {
       const arrivalDate = new Date(tour.arrivalDate);
       return arrivalDate > new Date();
@@ -154,13 +208,11 @@ export class TourCatalogComponent implements OnInit {
   }
 
   getTourImage(tour: TourResponse): string {
-    // Return tour image or default placeholder
-    return tour.imageUrl || '../assets/images/tour-placeholder.jpg';
+    return tour.imageUrl ;
   }
 
-  getDestinationName(destinationId: string): string {
-
-    return `Destination:  ${destinationId}`;
+  getDestinationName(destinationName: string): string {
+    return destinationName || 'Unknown Destination';
   }
 
   truncateDescription(description: string, maxLength: number = 100): string {
@@ -171,7 +223,13 @@ export class TourCatalogComponent implements OnInit {
   }
 
   onImageError(event: any): void {
-    event.target.src = '../assets/images/tour-placeholder.jpg';
+    // event.target.src = '../assets/images/tour-placeholder.jpg';
   }
 
+  /**
+   * Check if a tour is private (assigned to a specific customer)
+   */
+  isPrivateTour(tour: TourResponse): boolean {
+    return !!tour.customerId;
+  }
 }

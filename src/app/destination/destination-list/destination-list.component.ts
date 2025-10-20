@@ -5,12 +5,14 @@ import { DestinationService } from '../services/destination.service';
 import { DestinationData, DestinationFormComponent } from '../destination-form/destination-form.component';
 import { Subject, takeUntil } from 'rxjs';
 import { DestinationStore } from '../store/destination.store';
+import { AuthService, UserRole } from '../../auth/services/auth.service';
+import { HasRoleDirective } from '../../shared/directives/has-role.directive';
 
 declare var bootstrap: any;
 
 @Component({
   selector: 'app-destination-list',
-  imports: [DestinationFormComponent,CommonModule],
+  imports: [DestinationFormComponent,CommonModule,HasRoleDirective],
   templateUrl: './destination-list.component.html',
   styleUrl: './destination-list.component.css'
 })
@@ -19,6 +21,7 @@ export class DestinationListComponent implements OnInit, OnDestroy {
   isLoading = false;
   errorMessage: string | null = null;
   successMessage: string = '';
+  UserRole = UserRole;
   
   selectedDestination: Destination | null = null;
   isEditMode = false;
@@ -26,7 +29,11 @@ export class DestinationListComponent implements OnInit, OnDestroy {
   private destroy$ = new Subject<void>();
   readonly store = inject(DestinationStore);
 
-  constructor(private destinationService: DestinationService) {}
+  private destinationService = inject(DestinationService);
+  private authService = inject(AuthService);
+
+  currentUser = this.authService.currentUser();
+
 
 
   ngOnInit() {
@@ -124,7 +131,7 @@ export class DestinationListComponent implements OnInit, OnDestroy {
   // Handle image load errors
   onImageError(event: any) {
     console.log('Image failed to load:', event.target.src);
-    event.target.src = 'https://via.placeholder.com/400x300/e9ecef/6c757d?text=No+Image';
+    // event.target.src = 'https://via.placeholder.com/400x300/e9ecef/6c757d?text=No+Image';
   }
 
   // Show success toast

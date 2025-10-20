@@ -31,19 +31,35 @@ export class TourServiceService {
   }
 
   addTourTerms(tourId: string, term: Terms){
-    return this.http.post(`${this.API_URL}/Terms/${tourId}`, { term });
+    return this.http.post<Terms[]>(`${this.API_URL}/Terms/${tourId}`, term );
+  }
+
+  updateTourStatus(id: string){
+    return this.http.put<TourResponse>(`${this.API_URL}/Tour/UpdateStatus/${id}`, {});
+  }
+
+  getTourByCustomerId(customerId: string){
+    return this.http.get<TourResponse[]>(`${this.API_URL}/Tour/customer/${customerId}`);
   }
 
   getTourTerms(tourId: string){
-    return this.http.get<any[]>(`${this.API_URL}/Terms/${tourId}`);
+    return this.http.get<Terms[]>(`${this.API_URL}/Terms/tour/${tourId}`);
+  }
+
+  deleteTourTerm(id: string){
+    return this.http.delete(`${this.API_URL}/Terms/${id}`);
   }
 
   addTourNotes( data: Notes){
-    return this.http.post<Notes[]>(`${this.API_URL}/Notes`, { data });
+    return this.http.post<Notes[]>(`${this.API_URL}/Notes`,  data );
   }
 
   getTourNotes(tourId: string){
-    return this.http.get<any[]>(`${this.API_URL}/Notes/${tourId}`);
+    return this.http.get<Notes[]>(`${this.API_URL}/Notes/tour/${tourId}`);
+  }
+
+  deleteTourNote(id: string){
+    return this.http.delete(`${this.API_URL}/Notes/${id}`);
   }
 
   getAllCustomers(){

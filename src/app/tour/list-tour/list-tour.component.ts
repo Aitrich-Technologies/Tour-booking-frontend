@@ -39,7 +39,7 @@ export class ListTourComponent implements OnInit {
   successMessage: string = '';
 
   onTourAdded() {
-    this.showSuccessToast('Destination added successfully!');
+    this.showSuccessToast('Tour added successfully!');
     // No need to manually refresh - state management handles it
   }
 

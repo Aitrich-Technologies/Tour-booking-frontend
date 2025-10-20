@@ -29,7 +29,7 @@ export const roleGuard = (allowedRoles: UserRole[]): CanActivateFn => {
         router.navigate(['/agency/dashboard']);
         break;
       case UserRole.CONSULTANT:
-        router.navigate(['/consultant/dashboard']);
+        // router.navigate(['/consultant/dashboard']);
         break;
       case UserRole.CUSTOMER:
         router.navigate(['/']);

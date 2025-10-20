@@ -38,11 +38,11 @@
             Remember me
           </label>
         </div>
-        <a href="#" class="text-decoration-none">Forgot Password?</a>
+        <a href="javascript:void(0)" (click)="openForgotPasswordModal()" class="text-decoration-none">Forgot Password?</a>
       </div>
 
       <button type="submit" class="btn btn-primary w-100 mb-3" [disabled]="!loginForm.form.valid || loading">
-        Login
+        <span *ngIf="!loading">Login</span>
         <span *ngIf="loading">
           <span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
           Please wait...
@@ -56,3 +56,58 @@
     </form>
   </div>
 </div>
+
+<!-- Forgot Password Modal -->
+<div class="modal fade" [class.show]="showForgotPasswordModal" [style.display]="showForgotPasswordModal ? 'block' : 'none'" tabindex="-1">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Forgot Password</h5>
+        <button type="button" class="btn-close" (click)="closeForgotPasswordModal()"></button>
+      </div>
+      <div class="modal-body">
+        <div *ngIf="!forgotPasswordSuccess">
+          <p class="text-muted mb-4">Enter your email address and we'll send you instructions to reset your password.</p>
+          
+          <div class="mb-3">
+            <label for="forgotEmail" class="form-label">Email Address</label>
+            <input type="email" class="form-control" id="forgotEmail" [(ngModel)]="forgotPasswordEmail" 
+              placeholder="Enter your email" [disabled]="forgotPasswordLoading">
+          </div>
+
+          <div *ngIf="forgotPasswordError" class="alert alert-danger" role="alert">
+            <i class="bi bi-exclamation-triangle me-2"></i>
+            {{ forgotPasswordError }}
+          </div>
+        </div>
+
+        <div *ngIf="forgotPasswordSuccess" class="text-center">
+          <div class="text-success mb-3">
+            <i class="bi bi-check-circle" style="font-size: 3rem;"></i>
+          </div>
+          <h5 class="mb-3">Check Your Email</h5>
+          <p class="text-muted">
+            We've sent password reset instructions to <strong>{{ forgotPasswordEmail }}</strong>
+          </p>
+          <p class="text-muted small">
+            Didn't receive the email? Check your spam folder or try again.
+          </p>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" (click)="closeForgotPasswordModal()">
+          {{ forgotPasswordSuccess ? 'Close' : 'Cancel' }}
+        </button>
+        <button *ngIf="!forgotPasswordSuccess" type="button" class="btn btn-primary" 
+          (click)="onForgotPasswordSubmit()" [disabled]="!forgotPasswordEmail || forgotPasswordLoading">
+          <span *ngIf="!forgotPasswordLoading">Send Reset Link</span>
+          <span *ngIf="forgotPasswordLoading">
+            <span class="spinner-border spinner-border-sm me-2" role="status"></span>
+            Sending...
+          </span>
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+<div class="modal-backdrop fade" [class.show]="showForgotPasswordModal" *ngIf="showForgotPasswordModal"></div>

@@ -50,7 +50,6 @@ export class SignupComponent implements OnInit, AfterViewInit, OnDestroy{
       lastName: ['', Validators.required],
       gender: ['', Validators.required],
       dateOfBirth: ['', Validators.required],
-      role: ['', Validators.required],
       userName: ['', Validators.required],
       email: ['', [Validators.required, Validators.email]],
       telephoneNo: ['', Validators.required],
