@@ -1,16 +1,11 @@
-<!-- agency-tour-detail.component.html -->
 <div class="agency-view container py-5" *ngIf="!loading">
   <!-- Tour Header -->
-  <div class="tour-header bg-light border-bottom p-4 mb-4">
+  <div class="tour-header bg-light border-bottom p-4 mb-4 rounded-3">
     <div class="container-fluid">
       <div class="row align-items-center">
         <div class="col-md-8">
-          <h1 class="display-5 mb-0">{{ tour?.title }}</h1>
-        </div>
-        <div class="col-md-4 text-md-end">
-          <button class="btn btn-primary btn-lg" (click)="editTour()">
-            <i class="bi bi-pencil-square me-2"></i>Edit Tour
-          </button>
+          <h2 class="mb-0">Tour Details</h2>
+          <p class="text-muted mb-0 mt-2">Manage and view comprehensive tour information</p>
         </div>
       </div>
     </div>
@@ -19,7 +14,7 @@
   <div class="tour-management container-fluid">
     <!-- Statistics Section -->
     <section class="statistics mb-5">
-      <h2 class="h3 mb-4">Statistics</h2>
+      <h2 class="h3 mb-4">Statistics Overview</h2>
       <div class="row g-4">
         <div class="col-md-6 col-lg-3">
           <div class="card text-center border-0 shadow-sm h-100">
@@ -33,20 +28,191 @@
         <div class="col-md-6 col-lg-3">
           <div class="card text-center border-0 shadow-sm h-100">
             <div class="card-body">
+              <i class="bi bi-calendar-check text-info fs-1 mb-3"></i>
+              <h3 class="display-4 fw-bold text-info mb-2">{{ tour.departureDate | date:'MMM d' }}</h3>
+              <p class="text-muted mb-0">Departure Date</p>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-6 col-lg-3">
+          <div class="card text-center border-0 shadow-sm h-100">
+            <div class="card-body">
               <i class="bi bi-currency-dollar text-success fs-1 mb-3"></i>
-              <h3 class="display-4 fw-bold text-success mb-2">{{ tour?.revenue | currency }}</h3>
-              <p class="text-muted mb-0">Revenue</p>
+              <h3 class="display-4 fw-bold text-success mb-2">{{ tour.price | currency }}</h3>
+              <p class="text-muted mb-0">Price per Person</p>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-6 col-lg-3">
+          <div class="card text-center border-0 shadow-sm h-100">
+            <div class="card-body">
+              <i class="bi bi-geo-alt-fill text-danger fs-1 mb-3"></i>
+              <h3 class="h5 fw-bold text-danger mb-2 mt-4">{{ tour.destinationName }}</h3>
+              <p class="text-muted mb-0">Destination</p>
             </div>
           </div>
         </div>
       </div>
     </section>
 
+    <!-- Tour Information Section -->
+<section class="tour-info mb-5">
+  <div class="card border-0 shadow-sm">
+    <div class="card-header bg-gradient bg-primary text-white d-flex justify-content-between align-items-center py-3">
+      <h2 class="h4 mb-0">
+        <i class="bi bi-info-circle me-2"></i>Tour Information
+      </h2>
+      <button *ngIf="!isEditMode" class="btn btn-light btn-sm" (click)="editTour()">
+        <i class="bi bi-pencil me-2"></i>Quick Edit
+      </button>
+      <div *ngIf="isEditMode" class="d-flex gap-2">
+        <button class="btn btn-success btn-sm" (click)="saveTour()" >
+          <i class="bi bi-check-circle me-2"></i>Save
+        </button>
+        <button class="btn btn-secondary btn-sm" (click)="cancelEdit()">
+          <i class="bi bi-x-circle me-2"></i>Cancel
+        </button>
+      </div>
+    </div>
+    
+    <div class="card-body p-4" *ngIf="tour">
+      <!-- View Mode -->
+      <div *ngIf="!isEditMode" class="row g-4">
+        <!-- Tour Name -->
+        <div class="col-md-12">
+          <div class="border-start border-primary border-4 ps-3 mb-3">
+            <label class="text-muted small text-uppercase fw-semibold mb-1">Tour Name</label>
+            <h4 class="mb-0 text-dark">{{ tour.tourName }}</h4>
+          </div>
+        </div>
+
+        <!-- Tour Description -->
+        <div class="col-md-12">
+          <div class="border-start border-info border-4 ps-3 mb-3">
+            <label class="text-muted small text-uppercase fw-semibold mb-1">Description</label>
+            <p class="mb-0 text-dark">{{ tour.tourDescription }}</p>
+          </div>
+        </div>
+
+        <!-- Two Column Layout for Details -->
+        <div class="col-md-6">
+          <div class="bg-light rounded p-3 h-100">
+            <div class="d-flex align-items-center mb-3">
+              <div class="bg-success text-white rounded-circle p-2 me-3">
+                <i class="bi bi-cash-coin fs-5"></i>
+              </div>
+              <div>
+                <label class="text-muted small mb-0">Price</label>
+                <h5 class="mb-0 text-success">{{ tour.price | currency }}</h5>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="col-md-6">
+          <div class="bg-light rounded p-3 h-100">
+            <div class="d-flex align-items-center mb-3">
+              <div class="bg-info text-white rounded-circle p-2 me-3">
+                <i class="bi bi-calendar-event fs-5"></i>
+              </div>
+              <div>
+                <label class="text-muted small mb-0">Departure Date</label>
+                <h5 class="mb-0 text-info">{{ tour.departureDate | date:'fullDate' }}</h5>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="col-md-6">
+          <div class="bg-light rounded p-3 h-100">
+            <div class="d-flex align-items-center mb-3">
+              <div class="bg-danger text-white rounded-circle p-2 me-3">
+                <i class="bi bi-geo-alt-fill fs-5"></i>
+              </div>
+              <div>
+                <label class="text-muted small mb-0">Destination</label>
+                <h5 class="mb-0 text-danger">{{ tour.destinationName }}</h5>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Edit Mode -->
+      <form *ngIf="isEditMode" #editTourForm="ngForm" (ngSubmit)="saveTour()">
+        <div class="row g-4">
+          <!-- Tour Name -->
+          <div class="col-md-12">
+            <label class="form-label fw-semibold">Tour Name</label>
+            <input 
+              type="text" 
+              class="form-control" 
+              [(ngModel)]="editedTour.tourName"
+              name="tourName"
+              required>
+          </div>
+
+          <!-- Tour Description -->
+          <div class="col-md-12">
+            <label class="form-label fw-semibold">Description</label>
+            <textarea 
+              class="form-control" 
+              [(ngModel)]="editedTour.tourDescription"
+              name="tourDescription"
+              rows="4"
+              required></textarea>
+          </div>
+
+          <!-- Price -->
+          <div class="col-md-6">
+            <label class="form-label fw-semibold">Price</label>
+            <div class="input-group">
+              <span class="input-group-text">$</span>
+              <input 
+                type="number" 
+                class="form-control" 
+                [(ngModel)]="editedTour.price"
+                name="price"
+                min="0"
+                step="0.01"
+                required>
+            </div>
+          </div>
+
+          <!-- Departure Date -->
+          <div class="col-md-6">
+            <label class="form-label fw-semibold">Departure Date</label>
+            <input 
+              type="date" 
+              class="form-control" 
+              [(ngModel)]="editedTour.departureDate"
+              name="departureDate"
+              required>
+          </div>
+
+          <!-- Destination Name -->
+          <div class="col-md-6">
+            <label class="form-label fw-semibold">Destination</label>
+            <input 
+              type="text" 
+              class="form-control" 
+              [(ngModel)]="editedTour.destinationName"
+              name="destinationName"
+              required>
+          </div>
+        </div>
+      </form>
+    </div>
+  </div>
+</section>
+
     <!-- Terms Management Section -->
     <section class="terms-management mb-5">
       <div class="card border-0 shadow-sm">
         <div class="card-header bg-white border-bottom d-flex justify-content-between align-items-center py-3">
-          <h2 class="h4 mb-0">Terms & Conditions</h2>
+          <h2 class="h4 mb-0">
+            <i class="bi bi-file-text me-2 text-success"></i>Terms & Conditions
+          </h2>
           <button class="btn btn-success" (click)="showAddTerm = !showAddTerm">
             <i class="bi bi-plus-circle me-2"></i>Add Term
           </button>
@@ -55,6 +221,10 @@
         <div class="card-body">
           <!-- Add Term Form -->
           <div *ngIf="showAddTerm" class="add-form mb-4">
+            <div class="alert alert-info mb-3">
+              <i class="bi bi-info-circle me-2"></i>
+              Add important terms and conditions for this tour
+            </div>
             <div class="mb-3">
               <textarea 
                 class="form-control" 
@@ -75,15 +245,19 @@
           <!-- Terms List -->
           <ul class="list-group list-group-flush">
             <li *ngFor="let term of terms; let i = index" 
-                class="list-group-item d-flex justify-content-between align-items-start">
+                class="list-group-item d-flex justify-content-between align-items-start border-start border-success border-3">
               <div class="ms-2 me-auto">
-                <p class="mb-0 text-muted">{{ term.terms }}</p>
+                <div class="d-flex align-items-start">
+                  <span class="badge bg-success rounded-circle me-3 mt-1">{{ i + 1 }}</span>
+                  <p class="mb-0 text-dark">{{ term.terms }}</p>
+                </div>
               </div>
               <button class="btn btn-outline-danger btn-sm" (click)="deleteTerm(term.id)">
                 <i class="bi bi-trash"></i>
               </button>
             </li>
-            <li *ngIf="terms.length === 0" class="list-group-item text-center text-muted">
+            <li *ngIf="terms.length === 0" class="list-group-item text-center text-muted py-4">
+              <i class="bi bi-inbox fs-1 d-block mb-2"></i>
               No terms added yet
             </li>
           </ul>
@@ -95,7 +269,9 @@
     <section class="notes-management mb-5">
       <div class="card border-0 shadow-sm">
         <div class="card-header bg-white border-bottom d-flex justify-content-between align-items-center py-3">
-          <h2 class="h4 mb-0">Tour Notes</h2>
+          <h2 class="h4 mb-0">
+            <i class="bi bi-sticky me-2 text-info"></i>Tour Notes
+          </h2>
           <button class="btn btn-info text-white" (click)="showAddNote = !showAddNote">
             <i class="bi bi-plus-circle me-2"></i>Add Note
           </button>
@@ -104,50 +280,64 @@
         <div class="card-body">
           <!-- Add Note Form -->
           <div *ngIf="showAddNote" class="add-form mb-4">
-              <form action="" #tourNoteForm="ngForm" (ngSubmit)="addNote()">
-            <div class="mb-3">
-              <textarea 
-                class="form-control" 
-                [(ngModel)]="tourNotesData.tourNotes" 
-                placeholder="Enter new note"
-                name="tourNotes"
-                rows="3"></textarea>
+            <form action="" #tourNoteForm="ngForm" (ngSubmit)="addNote()">
+              <div class="alert alert-info mb-3">
+                <i class="bi bi-info-circle me-2"></i>
+                Add internal notes and choose whether they should be printed
+              </div>
+              <div class="mb-3">
+                <label class="form-label fw-semibold">Note Content</label>
+                <textarea 
+                  class="form-control" 
+                  [(ngModel)]="tourNotesData.tourNotes" 
+                  placeholder="Enter new note"
+                  name="tourNotes"
+                  rows="3"
+                  required></textarea>
+              </div>
               
-            </div>
-            <!-- Status in dropdown 'TO_BE_PRINTED' && 'NOT_TO_BE_PRINTED' -->
-            <div class="mb-3">
-              <select class="form-select" 
-                      [(ngModel)]="tourNotesData.status" 
-                      name="status"
-                      required>
-                <option value="" disabled>Select Status</option>
-                <option value="TO_BE_PRINTED">To be printed</option>
-                <option value="NOT_TO_BE_PRINTED">Not to be printed</option>
-              </select>
-            </div>
+              <!-- Status Dropdown -->
+              <div class="mb-3">
+                <label class="form-label fw-semibold">Print Status</label>
+                <select class="form-select" 
+                        [(ngModel)]="tourNotesData.status" 
+                        name="status"
+                        required>
+                  <option value="" disabled>Select Status</option>
+                  <option value="TO_BE_PRINTED">
+                    <i class="bi bi-printer"></i> To be printed
+                  </option>
+                  <option value="NOT_TO_BE_PRINTED">
+                    <i class="bi bi-printer-fill"></i> Not to be printed
+                  </option>
+                </select>
+              </div>
 
-            <div class="d-flex gap-2">
-              <button class="btn btn-primary" type="submit">
-                <i class="bi bi-check-circle me-2"></i>Save
-              </button>
-              <button class="btn btn-secondary" (click)="showAddNote = false">
-                <i class="bi bi-x-circle me-2"></i>Cancel
-              </button>
-            </div>
+              <div class="d-flex gap-2">
+                <button class="btn btn-primary" type="submit" [disabled]="!tourNoteForm.valid">
+                  <i class="bi bi-check-circle me-2"></i>Save
+                </button>
+                <button class="btn btn-secondary" type="button" (click)="showAddNote = false">
+                  <i class="bi bi-x-circle me-2"></i>Cancel
+                </button>
+              </div>
             </form>
           </div>
 
           <!-- Notes List -->
           <div class="notes-list">
-            <div *ngFor="let note of notes" class="card mb-3 border">
+            <div *ngFor="let note of notes" class="card mb-3 border-start border-info border-4 shadow-sm">
               <div class="card-body">
                 <div class="d-flex justify-content-between align-items-start">
                   <div class="flex-grow-1">
-                    <p class="mb-2">{{ note.tourNotes }}</p>
-                    <small class="text-muted">
-                      <i class="bi bi-calendar3 me-1"></i>
-                      <!-- {{ note.createdAt | date:'medium' }} -->
-                    </small>
+                    <div class="d-flex align-items-center mb-2">
+                      <span class="badge me-2" 
+                            [ngClass]="note.status === 'TO_BE_PRINTED' ? 'bg-success' : 'bg-secondary'">
+                        <i class="bi" [ngClass]="note.status === 'TO_BE_PRINTED' ? 'bi-printer' : 'bi-eye-slash'"></i>
+                        {{ note.status === 'TO_BE_PRINTED' ? 'Print' : 'No Print' }}
+                      </span>
+                    </div>
+                    <p class="mb-2 text-dark">{{ note.tourNotes }}</p>
                   </div>
                   <button class="btn btn-outline-danger btn-sm ms-3" (click)="deleteNote(note.id)">
                     <i class="bi bi-trash"></i>
@@ -156,31 +346,50 @@
               </div>
             </div>
             <div *ngIf="notes.length === 0" class="text-center text-muted py-4">
+              <i class="bi bi-sticky fs-1 d-block mb-2"></i>
               No notes added yet
             </div>
           </div>
         </div>
       </div>
     </section>
+        <div class="col-md-6">
+          <div class="bg-light rounded p-3 h-100">
+            <div class="d-flex align-items-center mb-3">
+              <div class="bg-warning text-white rounded-circle p-2 me-3">
+                <i class="bi bi-person-add fs-5"></i>
+              </div>
+              <div>
+                <label class="text-muted small mb-0">Created By</label>
+                <h5 class="mb-0 text-dark">{{ tour.consultantName }}</h5>
+              </div>
+            </div>
+          </div>
+        </div>
   </div>
 
-  <!-- Change tour status (SAVE,SUBMIT,APPROVED,ONHOLD,CLOSED,CANCELLED) -->
-  <div class="fixed-bottom bg-white border-top p-3 d-flex justify-content-end shadow-lg">
-    <div class="d-flex gap-2">
-      <button class="btn btn-secondary" (click)="goBack()">
-        <i class="bi bi-arrow-left-circle me-2"></i>Back
-      </button>
-      <button class="btn btn-danger" (click)="changeStatus(tourId)">
-        <i class="bi bi-x-circle me-2"></i>Cancel Tour
-      </button>
-      <button class="btn btn-warning text-white" (click)="changeStatus(tourId)">
-        <i class="bi bi-pause-circle me-2"></i>Put On Hold
-      </button>
-      <button class="btn btn-success" (click)="changeStatus(tourId)">
-        <i class="bi bi-check-circle me-2"></i>Close Tour
-      </button>
+  <!-- Fixed Bottom Action Bar -->
+  <div class="fixed-bottom bg-white border-top p-3 shadow-lg" style="z-index: 1020;">
+    <div class="container">
+      <div class="d-flex justify-content-between align-items-center flex-wrap gap-2">
+        <button class="btn btn-outline-secondary" (click)="goBack()">
+          <i class="bi bi-arrow-left-circle me-2"></i>Back
+        </button>
+        
+        <div class="d-flex gap-2 flex-wrap">
+          <button class="btn btn-danger" (click)="changeStatus(tourId)">
+            <i class="bi bi-x-circle me-2"></i>Cancel Tour
+          </button>
+          <button class="btn btn-warning text-white" (click)="changeStatus(tourId)">
+            <i class="bi bi-pause-circle me-2"></i>Put On Hold
+          </button>
+          <button class="btn btn-success" (click)="changeStatus(tourId)">
+            <i class="bi bi-check-circle me-2"></i>Close Tour
+          </button>
+        </div>
+      </div>
     </div>
-   
+  </div>
 </div>
 
 <!-- Loading Spinner -->
@@ -189,3 +398,6 @@
     <span class="visually-hidden">Loading...</span>
   </div>
 </div>
+
+<!-- Add bottom padding to prevent content from being hidden by fixed bottom bar -->
+<div style="height: 80px;"></div>

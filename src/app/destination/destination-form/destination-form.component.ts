@@ -21,7 +21,7 @@ export interface DestinationData {
   styleUrl: './destination-form.component.css'
 })
 export class DestinationFormComponent implements OnChanges {
-  @ViewChild('destinationForm') form: NgForm | undefined;
+ @ViewChild('destinationForm') form: NgForm | undefined;
   
   @Input() destination: Destination | null = null;
   @Input() isEditMode = false;
@@ -34,17 +34,46 @@ export class DestinationFormComponent implements OnChanges {
   imageUrl: string = '';
   selectedFile: File | null = null;
   isLoading = false;
+  
+  private modalElement: any;
+  private modalHiddenListener: any;
 
   constructor(private destinationService: DestinationService) {}
 
+  ngAfterViewInit() {
+    // Set up modal hidden event listener to reset form
+    this.modalElement = document.getElementById('addDestinationModal');
+    if (this.modalElement) {
+      this.modalHiddenListener = () => {
+        this.resetForm();
+      };
+      this.modalElement.addEventListener('hidden.bs.modal', this.modalHiddenListener);
+    }
+  }
+
+  ngOnDestroy() {
+    // Clean up event listener
+    if (this.modalElement && this.modalHiddenListener) {
+      this.modalElement.removeEventListener('hidden.bs.modal', this.modalHiddenListener);
+    }
+  }
+
   ngOnChanges(changes: SimpleChanges) {
     // When destination input changes (for edit mode)
-    if (changes['destination'] && this.destination) {
-      this.name = this.destination.name;
-      this.city = this.destination.city;
-      this.imageUrl = this.destination.imageUrl;
-      this.selectedFile = null; // Reset file selection
-    } else if (changes['isEditMode'] && !this.isEditMode) {
+    if (changes['destination']) {
+      if (this.destination) {
+        this.name = this.destination.name;
+        this.city = this.destination.city;
+        this.imageUrl = this.destination.imageUrl;
+        this.selectedFile = null; // Reset file selection
+      } else {
+        // If destination is null (add mode), reset the form
+        this.resetForm();
+      }
+    }
+    
+    // Reset form when switching from edit to add mode
+    if (changes['isEditMode'] && !this.isEditMode && changes['isEditMode'].previousValue === true) {
       this.resetForm();
     }
   }
@@ -102,7 +131,6 @@ export class DestinationFormComponent implements OnChanges {
         console.log('Destination added successfully:', response);
         this.isLoading = false;
         this.destinationAdded.emit();
-        this.resetForm();
         this.closeModal();
       },
       error: (error) => {
@@ -119,7 +147,6 @@ export class DestinationFormComponent implements OnChanges {
         console.log('Destination updated successfully:', response);
         this.isLoading = false;
         this.destinationUpdated.emit();
-        this.resetForm();
         this.closeModal();
       },
       error: (error) => {
@@ -190,10 +217,5 @@ export class DestinationFormComponent implements OnChanges {
     if (this.form) {
       this.form.resetForm();
     }
-  }
-
-  // Called when modal is closed
-  onModalHidden() {
-    this.resetForm();
   }
 }

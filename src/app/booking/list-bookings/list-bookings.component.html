@@ -1,49 +1,59 @@
 <div class="container py-5">
-    <div class="card shadow-lg border-0 rounded-3">
-      <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
-        <h4 class="fw-bold mb-0">Booking List</h4>
+
+      @if(bookings.length == 0) {
+    <div class="col-12">
+      <div class="text-center py-5">
+        <i class="bi bi-inbox display-1 text-muted"></i>
+        <h5 class="text-muted mt-3">No Bookings found</h5>
+        <button class="btn btn-warning" routerLink="/tour/catalog">Click here to book</button>
       </div>
-      <div class="card-body p-0">
-        <table class="table table-hover table-striped mb-0 align-middle">
-          <thead class="table-light">
-            <tr>
-              <th>Name</th>
-              <th>Destination</th>
-              <th>Booking Date</th>
-              <th>Status</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr *ngFor="let booking of bookings" routerLink="/bookings/{{ booking.id }}" style="cursor: pointer;">
-              <td>{{ booking.firstName }}</td>
-              <td>{{ booking.tour.destinationName }}</td>
-              <td>{{ booking.createdAt | date:'shortDate' }}</td>
-              <td>
-                 <span class="text-dark" 
-                      [ngClass]="{
+    </div>
+    }
+    
+    @if(bookings.length > 0){
+  <div class="card shadow-lg border-0 rounded-3">
+    <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
+      <h4 class="fw-bold mb-0">Booking List</h4>
+    </div>
+
+    <div class="card-body p-0">
+      <table class="table table-hover table-striped mb-0 align-middle">
+        <thead class="table-light">
+          <tr>
+            <th>Name</th>
+            <th>Destination</th>
+            <th>Booking Date</th>
+            <th>Status</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let booking of bookings" routerLink="/bookings/{{ booking.id }}" style="cursor: pointer;">
+            <td>{{ booking.firstName }}</td>
+            <td>{{ booking.tour.destinationName }}</td>
+            <td>{{ booking.createdAt | date:'shortDate' }}</td>
+            <td>
+              <span class="text-dark" [ngClass]="{
                         'bg-success': booking.status === 'Confirmed',
                         'bg-warning text-dark': booking.status === 'Pending',
                         'bg-danger': booking.status === 'Cancelled'
                       }">
-                  {{ booking.status }}
-                </span> 
-              </td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
+                {{ booking.status }}
+              </span>
+            </td>
+          </tr>
+        </tbody>
+      </table>
     </div>
   </div>
+}
+</div>
 <!-- No bookings message -->
-    <ng-template #noBookings>
-      <div class="text-center p-5">
-        <h5 class="text-muted">No bookings available.</h5>
-        <p class="text-muted">Start by adding your first booking.</p>   
-        <button type="button" 
-                class="btn btn-primary rounded-pill" 
-                data-bs-toggle="modal" 
-                data-bs-target="#addBookingModal">
-          <i class="bi bi-plus-circle me-1"></i> Add Your First Booking
-        </button>
-      </div>
-    </ng-template>  
+<ng-template #noBookings>
+  <div class="text-center p-5">
+    <h5 class="text-muted">No bookings available.</h5>
+    <p class="text-muted">Start by adding your first booking.</p>
+    <button type="button" class="btn btn-primary rounded-pill" data-bs-toggle="modal" data-bs-target="#addBookingModal">
+      <i class="bi bi-plus-circle me-1"></i> Add Your First Booking
+    </button>
+  </div>
+</ng-template>

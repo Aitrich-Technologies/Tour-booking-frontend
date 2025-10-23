@@ -21,6 +21,7 @@ export class ConsultantDashboardComponent {
   showModal = signal(false);
   editingConsultant = signal<Consultant | null>(null);
   isLoading = signal(false);
+  showPassword = false
 
   consultantForm: FormGroup;
 
@@ -107,6 +108,10 @@ export class ConsultantDashboardComponent {
   viewConsultant(consultant: Consultant): void {
     alert(`View consultant details for: ${consultant.firstName} ${consultant.lastName}`);
     // Navigate to detail page or show detail modal
+  }
+
+  togglePassword(){
+    this.showPassword = !this.showPassword
   }
 
   activateConsultant(id: string): void {

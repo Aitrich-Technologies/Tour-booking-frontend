@@ -22,7 +22,7 @@ export class TourServiceService {
   }
 
 
-  getTour(){
+  getAllTour(){
     return this.http.get<TourResponse[]>(`${this.API_URL}/Tour`);
   }
 
@@ -68,5 +68,9 @@ export class TourServiceService {
 
   getAllConsultants(){
     return this.http.get<User[]>(`${this.API_URL}/User`);
+  }
+
+  updateTour(id: string, tourData: TourResponse){
+    return this.http.put<TourResponse>(`${this.API_URL}/Tour/${id}`, tourData)
   }
 }

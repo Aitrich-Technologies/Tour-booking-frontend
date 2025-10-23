@@ -53,7 +53,7 @@ export class TourCatalogComponent implements OnInit {
     this.isLoading = true;
     console.log('Starting to load tours...');
     
-    this.tourService.getTour().subscribe({
+    this.tourService.getAllTour().subscribe({
       next: (tours) => {
         console.log('API Response - Total tours:', tours.length);
         console.log('Tours data:', tours);
@@ -104,7 +104,7 @@ export class TourCatalogComponent implements OnInit {
     // Also allow consultants/admins to see all tours
     const userRole = currentUser.role?.toUpperCase();
     
-    if (userRole === UserRole.CONSULTANT || userRole === 'ADMIN') {
+    if (userRole === UserRole.CONSULTANT || userRole === UserRole.AGENCY) {
       return true; // Consultants and admins can see all tours
     }
 

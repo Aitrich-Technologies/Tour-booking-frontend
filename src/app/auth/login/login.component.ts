@@ -3,6 +3,8 @@ import { FormsModule } from '@angular/forms';
 import { AuthService } from '../services/auth.service';
 import { Router } from '@angular/router';
 import { CommonModule } from '@angular/common';
+import { SignalrService } from '../../shared/services/signalr.service';
+import { ToastService } from '../../shared/services/toast.service';
 
 @Component({
   selector: 'app-login',
@@ -27,35 +29,42 @@ username: string = '';
 
   private authService = inject(AuthService);
   private router = inject(Router);
+  private notificationService = inject(SignalrService)
+  private toastService = inject(ToastService);
 
   togglePassword() {
     this.showPassword = !this.showPassword;
   }
 
   onSubmit() {
-    if (this.username && this.password) {
-      this.loading = true;
+  if (this.username && this.password) {
+    this.loading = true;
 
-      console.log('Login attempt:', {
-        username: this.username,
-        password: this.password,
-        rememberMe: this.rememberMe
-      });
-      
-      this.authService.login({ userName: this.username, password: this.password }).subscribe({
-        next: (response) => {
-          console.log('Login successful:', response);
-          this.loading = false;
-          this.router.navigate(['/']);
-        },
-        error: (error) => {
-          console.error('Login failed:', error);
-          this.loading = false;
-          // Handle login error, e.g., show error message
-        }
-      });
-    }
+    console.log('Login attempt:', {
+      username: this.username,
+      password: this.password,
+      rememberMe: this.rememberMe
+    });
+    
+    this.authService.login({ userName: this.username, password: this.password }).subscribe({
+      next: (response) => {
+        console.log('Login successful:', response);
+        this.loading = false;
+        this.notificationService.startConnection();
+        this.toastService.success('Login successful!');
+        this.router.navigate(['/']);
+      },
+      error: (error) => {
+        console.error('Login failed:', error);
+        this.loading = false;
+        const errorMessage = error.error?.message || 'Login failed. Please try again.';
+        this.toastService.error(errorMessage);
+      }
+    });
+  } else {
+    this.toastService.warning('Please enter username and password');
   }
+}
 
   // Open Forgot Password Modal
   openForgotPasswordModal() {

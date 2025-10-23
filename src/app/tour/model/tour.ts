@@ -24,6 +24,7 @@ export interface TourResponse {
     departureDate: string,
     arrivalDate: string,
     customerId?: string,
+    consultantName: string
     status: "SAVE"
 }
 

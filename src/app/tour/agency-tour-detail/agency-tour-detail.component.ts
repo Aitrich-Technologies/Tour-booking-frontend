@@ -7,6 +7,7 @@ import { BookingService } from '../../booking/services/booking.service';
 import { Notes } from '../model/notes';
 import { Terms } from '../model/terms';
 import { TourBooking } from '../../booking/model/tourBooking';
+import { TourResponse } from '../model/tour';
 
 @Component({
   selector: 'app-agency-tour-detail',
@@ -15,30 +16,25 @@ import { TourBooking } from '../../booking/model/tourBooking';
   styleUrl: './agency-tour-detail.component.css'
 })
 export class AgencyTourDetailComponent {
-goBack: any;
+ @ViewChild('tourNoteForm') form: any;
+  // @ViewChild('editTourForm') editTourForm!: NgForm;
 
-
-  @ViewChild('tourNoteForm') form: any;
-getDestinationName(arg0: any) {
-throw new Error('Method not implemented.');
-}
-onImageError($event: ErrorEvent) {
-throw new Error('Method not implemented.');
-}
-
-   tourId: string = '';
-  tour: any;
+  tourId: string = '';
+  tour!: TourResponse;
   terms: Terms[] = [];
   notes: Notes[] = [];
   bookings: TourBooking[] = [];
   loading: boolean = true;
-  tourNoteForm!: NgForm;
   
   // For adding new terms/notes
   newTerm: string = '';
   tourNotes: string = '';
   showAddTerm: boolean = false;
   showAddNote: boolean = false;
+  
+  // For editing tour
+  isEditMode: boolean = false;
+  editedTour!: TourResponse;
 
   tourNotesData: Notes = {
     id: '',
@@ -47,23 +43,14 @@ throw new Error('Method not implemented.');
     status: '',
   }
 
-
-
-
-    private route = inject( ActivatedRoute);
-    private router = inject( Router);
-    private tourService = inject( TourServiceService);
-    private bookingService = inject(BookingService);
-
-
+  private route = inject(ActivatedRoute);
+  private router = inject(Router);
+  private tourService = inject(TourServiceService);
+  private bookingService = inject(BookingService);
 
   ngOnInit(): void {
     this.tourId = this.route.snapshot.paramMap.get('id') || '';
     this.loadTourData();
-    console.log("Loaded tour ID:", this.tourId);
-    console.log("This is detail component ");
-    console.log("this is test");
-    
   }
 
   loadTourData(): void {
@@ -72,6 +59,7 @@ throw new Error('Method not implemented.');
     this.tourService.getTourById(this.tourId).subscribe({
       next: (data) => {
         this.tour = data;
+        this.editedTour = { ...data }; // Create a copy for editing
         this.loading = false;
       }
     });
@@ -96,6 +84,41 @@ throw new Error('Method not implemented.');
     });
   }
 
+  // Toggle edit mode
+  editTour(): void {
+    this.isEditMode = true;
+    this.editedTour = { ...this.tour }; // Create fresh copy when entering edit mode
+  }
+
+  // Cancel edit mode
+  cancelEdit(): void {
+    this.isEditMode = false;
+    this.editedTour = { ...this.tour }; // Reset to original values
+  }
+
+  // Save edited tour
+  saveTour(): void {
+    // if (this.editTourForm.valid) {
+      this.loading = true;
+      
+      this.tourService.updateTour(this.tourId, this.editedTour).subscribe({
+        next: (updatedTour) => {
+          this.tour = updatedTour;
+          this.editedTour = { ...updatedTour };
+          this.isEditMode = false;
+          this.loading = false;
+          console.log('Tour updated successfully:', updatedTour);
+          // Optionally show success message
+        },
+        error: (error) => {
+          console.error('Error updating tour:', error);
+          this.loading = false;
+          // Optionally show error message
+        }
+      });
+    // }
+  }
+
   changeStatus(data: string): void {
     this.tourService.updateTourStatus(this.tourId).subscribe({
       next: (updatedTour) => {
@@ -103,19 +126,17 @@ throw new Error('Method not implemented.');
         console.log('Tour status updated:', updatedTour);
       }
     });
-}
+  }
 
   addTerm(): void {
     if (this.newTerm.trim()) {
-
       const termData = {
         tourId: this.tourId,
         id: '',
         terms: this.newTerm
       };
-      console.log('Adding term:', termData);
 
-      this.tourService.addTourTerms(this.tourId,termData).subscribe({
+      this.tourService.addTourTerms(this.tourId, termData).subscribe({
         next: () => {
           this.newTerm = '';
           this.showAddTerm = false;
@@ -132,9 +153,8 @@ throw new Error('Method not implemented.');
         tourId: this.tourId,
         tourNotes: this.tourNotesData.tourNotes,
         status: this.tourNotesData.status
-
       };
-      console.log('Adding note:', noteData);
+
       this.tourService.addTourNotes(noteData).subscribe({
         next: () => {
           this.tourNotes = '';
@@ -146,7 +166,7 @@ throw new Error('Method not implemented.');
   }
 
   deleteTerm(termId: string): void {
-    this.tourService.deleteTourTerm( termId).subscribe({
+    this.tourService.deleteTourTerm(termId).subscribe({
       next: () => this.loadTermsAndNotes()
     });
   }
@@ -157,8 +177,8 @@ throw new Error('Method not implemented.');
     });
   }
 
-  editTour(): void {
-    this.router.navigate(['/add-tour/', this.tourId, 'edit']);
+  goBack(): void {
+    this.router.navigate(['/tours']); // Adjust route as needed
   }
 
 }
