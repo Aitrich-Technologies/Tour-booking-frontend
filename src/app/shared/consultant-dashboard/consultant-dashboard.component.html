@@ -247,11 +247,21 @@
                     
                     @if (!editingConsultant()) {
                       <div class="col-md-6 mb-3">
-                        <label class="form-label">Password <span class="text-danger">*</span></label>
-                        <input type="password" class="form-control" formControlName="password"
-                               [class.is-invalid]="isFieldInvalid('password')">
-                        <div class="invalid-feedback">Password is required (min 6 characters)</div>
-                      </div>
+                <label class="form-label fw-semibold text-muted small mb-2">
+                  <i class="bi bi-lock me-1"></i>Password
+                </label>
+                <div class="input-group">
+                  <span class="input-group-text">
+                    <i class="bi bi-lock"></i>
+                  </span>
+                  <input [type]="showPassword ? 'text' : 'password'" class="form-control" id="password" name="password"
+                    formControlName="password" placeholder="Enter your password" required>
+                  <button class="btn btn-outline-secondary" type="button" (click)="togglePassword()">
+                    <i [class]="showPassword ? 'bi bi-eye-slash' : 'bi bi-eye'"></i>
+                  </button>
+                </div>
+              </div>
+                   
                     }
                   </div>
                 </form>

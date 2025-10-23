@@ -38,14 +38,14 @@ export class BookingDetailsComponent implements OnInit {
   participantForm: FormGroup = this.fb.group({
     firstName: ['', Validators.required],
     lastName: ['', Validators.required],
-    // email: [''],
+    email: [''],
     // phoneNumber: [''],
     // dateOfBirth: [''],
     gender: ['', Validators.required],
     citizenship: ['', Validators.required],
     passportNumber: [''],
-    issueDate: [''],
-    expiryDate: [''],
+    issueDate: [null],
+    expiryDate: [null],
     placeOfBirth: [''],
   });
   

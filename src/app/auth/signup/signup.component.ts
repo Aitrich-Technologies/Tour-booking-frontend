@@ -19,6 +19,7 @@ export class SignupComponent implements OnInit, AfterViewInit, OnDestroy{
   signupForm!: FormGroup;
   loading = false;
   private modalInstance: any;
+  showPassword: boolean = false;
 
   ngOnInit(): void {
     this.initForm();
@@ -57,6 +58,10 @@ export class SignupComponent implements OnInit, AfterViewInit, OnDestroy{
     });
   }
 
+    togglePassword() {
+    this.showPassword = !this.showPassword;
+  }
+
   onSubmit(): void {
     if (this.signupForm.valid) {
       this.loading = true;
@@ -80,7 +85,7 @@ export class SignupComponent implements OnInit, AfterViewInit, OnDestroy{
         // After successful signup:
         this.closeModal();
         // Navigate to booking or dashboard
-        this.router.navigate(['/bookings']);
+        this.router.navigate(['/auth/login']);
       }, 2000);
     }
   }

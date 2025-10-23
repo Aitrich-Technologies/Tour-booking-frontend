@@ -7,6 +7,7 @@ import { TourBooking } from '../model/tourBooking';
 import { TourResponse } from '../../tour/model/tour';
 import { BookingService } from '../services/booking.service';
 import { AuthService } from '../../auth/services/auth.service';
+import { ToastService } from '../../shared/services/toast.service';
 
 @Component({
   selector: 'app-booking-form',
@@ -30,7 +31,8 @@ export class BookingFormComponent {
     private route: ActivatedRoute,
     private router: Router,
     private bookingService: BookingService,
-    private authService: AuthService
+    private authService: AuthService,
+    private toastService: ToastService
   ) {
     // Get tour data from router state (passed from tour-detail component)
     const navigation = this.router.getCurrentNavigation();
@@ -99,14 +101,14 @@ export class BookingFormComponent {
       lastName: ['', Validators.required],
       gender: ['', Validators.required],
       dob: ['', Validators.required],
-      citizenship: ['', Validators.required],
+      citizenship: [''],
       passportNumber: [''],
-      issueDate: [''],
-      expiryDate: [''],
-      placeOfBirth: ['', Validators.required],
-      leadPassenger: [true],
-      participantType: ['Adult'],
-      status: ['Pending']
+      issueDate: [null],
+      expiryDate: [null],
+      placeOfBirth: [''],
+      leadPassenger: [''],
+      participantType: [''],
+      status: ['SAVE']
     });
     console.log('Form initialized with tourId:', this.tourId);
   }
@@ -124,13 +126,13 @@ export class BookingFormComponent {
       this.bookingService.bookTour(bookingData).subscribe({
         next: (response) => {
           console.log('Booking successful', response);
-          alert('Booking submitted successfully!');
+          this.toastService.success('Booking successful!, Check your mail for the details');
           this.loading = false;
           // this.router.navigate(['/bookings/confirmation', response.id]);
         },
         error: (error) => {
           console.error('Booking failed', error);
-          alert('Booking failed. Please try again.');
+          this.toastService.error('Booking failed. Please try again.');
           this.loading = false;
         }
       });

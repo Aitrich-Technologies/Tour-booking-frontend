@@ -13,7 +13,7 @@ import { Terms } from '../model/terms';
   styleUrl: './tour-detail.component.css'
 })
 export class TourDetailComponent {
-  tour: TourResponse | null = null;
+  tour!: TourResponse;
   notes: Notes[] = [];
   terms: Terms [] = [];
   tourId: string = '';
@@ -44,7 +44,7 @@ export class TourDetailComponent {
     this.errorMessage = '';
 
     this.tourService.getTourById(this.tourId).subscribe({
-      next: (tour: TourResponse) => {
+      next: (tour: any) => {
         this.tour = tour;
         console.log('Tour details:', tour);
         this.isLoading = false;

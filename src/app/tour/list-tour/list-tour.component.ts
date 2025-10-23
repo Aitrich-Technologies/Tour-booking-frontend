@@ -56,7 +56,7 @@ export class ListTourComponent implements OnInit {
 
   getAllTours() {
     // this.isLoading = true;
-    this.tourService.getTour().subscribe({
+    this.tourService.getAllTour().subscribe({
       next: (tours) => {
         this.tours = tours;
         this.isLoading = false;

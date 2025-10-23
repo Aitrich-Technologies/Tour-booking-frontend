@@ -75,7 +75,7 @@
                   {{ booking.gender }}
                 </div>
               </div>
-              
+
               <div class="info-item mb-3">
                 <label class="text-muted small mb-1">Date of Birth</label>
                 <div class="fw-bold">
@@ -154,7 +154,8 @@
                 <div class="fw-bold" [class.text-danger]="isPassportExpiringSoon(booking.expiryDate)">
                   <i class="bi bi-calendar-x me-2"></i>
                   {{ formatDate(booking.expiryDate) }}
-                  <i *ngIf="isPassportExpiringSoon(booking.expiryDate)" class="bi bi-exclamation-circle text-danger ms-2"></i>
+                  <i *ngIf="isPassportExpiringSoon(booking.expiryDate)"
+                    class="bi bi-exclamation-circle text-danger ms-2"></i>
                 </div>
               </div>
             </div>
@@ -171,14 +172,13 @@
         </div>
         <div class="card-body p-0">
           <div class="list-group list-group-flush">
-            <div *ngFor="let participant of booking.participants; let i = index" 
-                 class="list-group-item p-0">
-              
+            <div *ngFor="let participant of booking.participants; let i = index" class="list-group-item p-0">
+
               <!-- Participant Header (Clickable) -->
-              <div (click)="toggleParticipant(participant.id)" 
-                   class="p-3 d-flex justify-content-between align-items-center"
-                   style="cursor: pointer; background-color: #f8f9fa;"
-                   [class.border-bottom]="i < booking.participants.length - 1">
+              <div (click)="toggleParticipant(participant.id)"
+                class="p-3 d-flex justify-content-between align-items-center"
+                style="cursor: pointer; background-color: #f8f9fa;"
+                [class.border-bottom]="i < booking.participants.length - 1">
                 <div class="d-flex align-items-center flex-grow-1">
                   <div class="avatar-circle-sm bg-info text-white me-3">
                     {{ participant.firstName.charAt(0) }}{{ participant.lastName.charAt(0) }}
@@ -186,15 +186,14 @@
                   <div>
                     <h6 class="mb-1 fw-bold">{{ participant.firstName }} {{ participant.lastName }}</h6>
                     <small class="text-muted">
-                      <i class="bi bi-person me-1"></i>{{ participant.gender }} • 
+                      <i class="bi bi-person me-1"></i>{{ participant.gender }} •
                       <i class="bi bi-calendar me-1"></i>{{ formatDate(participant.dob) }}
                     </small>
                   </div>
                 </div>
-                <i class="bi" 
-                   [class.bi-chevron-down]="expandedParticipant !== participant.id"
-                   [class.bi-chevron-up]="expandedParticipant === participant.id"
-                   style="font-size: 1.5rem; color: #666;"></i>
+                <i class="bi" [class.bi-chevron-down]="expandedParticipant !== participant.id"
+                  [class.bi-chevron-up]="expandedParticipant === participant.id"
+                  style="font-size: 1.5rem; color: #666;"></i>
               </div>
 
               <!-- Expanded Participant Details -->
@@ -259,11 +258,10 @@
                   <div class="col-md-6">
                     <div class="info-item-sm mb-3">
                       <label class="text-muted small d-block mb-1">Expiry Date</label>
-                      <div class="small fw-bold" 
-                           [class.text-danger]="isPassportExpiringSoon(participant.expiryDate)">
+                      <div class="small fw-bold" [class.text-danger]="isPassportExpiringSoon(participant.expiryDate)">
                         {{ formatDate(participant.expiryDate) }}
-                        <i *ngIf="isPassportExpiringSoon(participant.expiryDate)" 
-                           class="bi bi-exclamation-circle text-danger ms-2"></i>
+                        <i *ngIf="isPassportExpiringSoon(participant.expiryDate)"
+                          class="bi bi-exclamation-circle text-danger ms-2"></i>
                       </div>
                     </div>
                     <div class="info-item-sm">
@@ -349,23 +347,24 @@
         </div>
         <div class="card-body">
           <div class="d-flex justify-content-between align-items-center mb-3">
-            <span class="text-muted">Tour Price</span>
+            <span class="text-muted">Price per Person</span>
             <h4 class="text-success mb-0">${{ booking.tour.price }}</h4>
           </div>
           <hr>
           <div class="d-flex justify-content-between mb-2">
-            <span class="small">Base Price</span>
+            <span class="small">Base Price (per person)</span>
             <span class="small">${{ booking.tour.price }}</span>
           </div>
           <div class="d-flex justify-content-between mb-2">
-            <span class="small">Taxes & Fees</span>
-            <span class="small">$0</span>
+            <span class="small">Number of Participants</span>
+            <span class="small">{{ getTotalParticipants() }}</span>
           </div>
           <hr>
           <div class="d-flex justify-content-between align-items-center">
             <strong>Total Amount</strong>
-            <h5 class="text-primary mb-0">${{ booking.tour.price }}</h5>
+            <h5 class="text-primary mb-0">${{ calculateTotalPrice() }}</h5>
           </div>
+          <hr>
         </div>
       </div>
 

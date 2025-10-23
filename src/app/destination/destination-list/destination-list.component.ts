@@ -34,8 +34,6 @@ export class DestinationListComponent implements OnInit, OnDestroy {
 
   currentUser = this.authService.currentUser();
 
-
-
   ngOnInit() {
     // Subscribe to state changes from service
     this.destinationService.destinations$
@@ -59,7 +57,7 @@ export class DestinationListComponent implements OnInit, OnDestroy {
         }
       });
 
-      this.store.loadDestinations();
+    this.store.loadDestinations();
   }
 
   ngOnDestroy() {
@@ -70,12 +68,15 @@ export class DestinationListComponent implements OnInit, OnDestroy {
   // Handle destination added event
   onDestinationAdded() {
     this.showSuccessToast('Destination added successfully!');
-    // No need to manually refresh - state management handles it
+    // Reset form state after successful add
+    this.selectedDestination = null;
+    this.isEditMode = false;
   }
 
   // Handle destination updated event
   onDestinationUpdated() {
     this.showSuccessToast('Destination updated successfully!');
+    // Reset form state after successful update
     this.isEditMode = false;
     this.selectedDestination = null;
   }

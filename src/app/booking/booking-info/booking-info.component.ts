@@ -6,7 +6,7 @@ import { CommonModule } from '@angular/common';
 
 @Component({
   selector: 'app-booking-info',
-  imports: [CommonModule,RouterModule],
+  imports: [CommonModule, RouterModule],
   templateUrl: './booking-info.component.html',
   styleUrl: './booking-info.component.css'
 })
@@ -21,7 +21,7 @@ export class BookingInfoComponent {
     private route: ActivatedRoute,
     private router: Router,
     private bookingService: BookingService
-  ) {}
+  ) { }
 
   ngOnInit(): void {
     this.bookingId = this.route.snapshot.paramMap.get('id') || '';
@@ -47,6 +47,17 @@ export class BookingInfoComponent {
         console.error('Error fetching booking:', err);
       }
     });
+  }
+
+  getTotalParticipants(): number {
+    return this.booking?.participants?.length || 0;
+  }
+
+  calculateTotalPrice(): number {
+    if (!this.booking) return 0;
+    const basePrice = this.booking.tour.price;
+    const participants = this.getTotalParticipants();
+    return basePrice * participants;
   }
 
   goBack(): void {
@@ -94,8 +105,7 @@ export class BookingInfoComponent {
     return expiry <= sixMonthsFromNow;
   }
 
-    toggleParticipant(participantId: string): void {
+  toggleParticipant(participantId: string): void {
     this.expandedParticipant = this.expandedParticipant === participantId ? null : participantId;
   }
-
 }
