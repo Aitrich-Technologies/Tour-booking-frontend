@@ -158,6 +158,109 @@
         </div>
       </div>
 
+            <!-- View Details Modal -->
+      @if (showViewModal()) {
+        <div class="modal-backdrop show"></div>
+        <div class="modal show d-block" tabindex="-1">
+          <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+              <div class="modal-header bg-primary text-white">
+                <h5 class="modal-title">
+                  <i class="bi bi-person-badge me-2"></i>Consultant Details
+                </h5>
+                <button type="button" class="btn-close btn-close-white" (click)="closeViewModal()"></button>
+              </div>
+              <div class="modal-body">
+                @if (selectedConsultant()) {
+                  <div class="row">
+                    <!-- Profile Section -->
+                    <div class="col-12 text-center mb-4">
+                      <div class="user-avatar-large mx-auto mb-3">
+                        {{ getInitials(selectedConsultant()!) }}
+                      </div>
+                      <h4>{{ selectedConsultant()!.firstName }} {{ selectedConsultant()!.lastName }}</h4>
+                      <span class="badge" [ngClass]="getStatusClass(selectedConsultant()!.status)">
+                        {{ selectedConsultant()!.status }}
+                      </span>
+                    </div>
+
+                    <!-- Personal Information -->
+                    <div class="col-12 mb-3">
+                      <h6 class="text-primary border-bottom pb-2">
+                        <i class="bi bi-person me-2"></i>Personal Information
+                      </h6>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                      <label class="text-muted small">Gender</label>
+                      <p class="mb-0 fw-semibold">{{ selectedConsultant()!.gender }}</p>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                      <label class="text-muted small">Date of Birth</label>
+                      <p class="mb-0 fw-semibold">{{ selectedConsultant()!.dateOfBirth | date:'longDate' }}</p>
+                    </div>
+
+                    <!-- Contact Information -->
+                    <div class="col-12 mb-3 mt-3">
+                      <h6 class="text-primary border-bottom pb-2">
+                        <i class="bi bi-envelope me-2"></i>Contact Information
+                      </h6>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                      <label class="text-muted small">Email</label>
+                      <p class="mb-0 fw-semibold">
+                        <i class="bi bi-envelope me-2"></i>{{ selectedConsultant()!.email }}
+                      </p>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                      <label class="text-muted small">Phone Number</label>
+                      <p class="mb-0 fw-semibold">
+                        <i class="bi bi-telephone me-2"></i>{{ selectedConsultant()!.telephoneNo }}
+                      </p>
+                    </div>
+
+                    <!-- Account Information -->
+                    <div class="col-12 mb-3 mt-3">
+                      <h6 class="text-primary border-bottom pb-2">
+                        <i class="bi bi-person-circle me-2"></i>Account Information
+                      </h6>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                      <label class="text-muted small">Username</label>
+                      <p class="mb-0 fw-semibold">{{ selectedConsultant()!.userName }}</p>
+                    </div>
+ 
+                    <!-- Statistics -->
+                    <div class="col-12 mb-3 mt-3">
+                      <h6 class="text-primary border-bottom pb-2">
+                        <i class="bi bi-graph-up me-2"></i>Statistics
+                      </h6>
+                    </div>
+                    <div class="col-md-4 mb-3">
+                      <label class="text-muted small">Assigned Tours</label>
+                      <p class="mb-0 fw-semibold fs-4 text-info">{{ selectedConsultant()!.assignedTours || 0 }}</p>
+                    </div>
+                    <div class="col-md-4 mb-3">
+                      <label class="text-muted small">Total Bookings</label>
+                      <p class="mb-0 fw-semibold fs-4 text-success">{{ selectedConsultant()!.totalBookings || 0 }}</p>
+                    </div>
+                    <div class="col-md-4 mb-3">
+                      <label class="text-muted small">Member Since</label>
+                      <p class="mb-0 fw-semibold">{{ selectedConsultant()!.createdAt | date:'mediumDate' }}</p>
+                    </div>
+                  </div>
+                }
+              </div>
+              <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" (click)="closeViewModal()">Close</button>
+                <button type="button" class="btn btn-primary" (click)="editFromView()">
+                  <i class="bi bi-pencil me-2"></i>Edit Consultant
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      }
+
       <!-- Add/Edit Modal -->
       @if (showModal()) {
         <div class="modal-backdrop show"></div>

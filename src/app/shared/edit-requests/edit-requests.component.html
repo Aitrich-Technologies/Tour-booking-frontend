@@ -1,0 +1,52 @@
+<!-- Booking Requests Component -->
+<div class="container mt-4">
+  <h2 class="mb-4">Booking Requests</h2>
+
+  <!-- Edit Requests Section -->
+  <div class="mb-5">
+    <h3 class="mb-3">Edit Requests</h3>
+    
+    <div *ngIf="editRequests.length === 0" class="alert alert-info">
+      No edit requests available.
+    </div>
+
+    <div *ngFor="let request of editRequests" class="card mb-3">
+      <div class="card-body">
+        <h5 class="card-title">Booking ID: {{ request.bookingId }}</h5>
+        <p class="card-text"><strong>Reason:</strong> {{ request.reason }}</p>
+        <p class="card-text"><strong>Status:</strong> {{ request.status }}</p>
+        <div class="card-text"><strong>Tour Details:</strong> 
+          <p>Customer Name: {{request.booking.customerName}} </p>
+          <p>Tour Name: {{request.booking.tourName}}</p>
+        </div>
+
+        <button class="btn btn-success me-2" (click)="approveEditRequest(request.bookingId)">Approve Edit</button>
+        <!-- <button class="btn btn-danger" (click)="rejectEditRequest(request.bookingId)">Reject Edit</button> -->
+      </div>
+    </div>
+  </div>
+
+  <!-- Cancel Requests Section -->
+  <div class="mb-5">
+    <h3 class="mb-3">Cancel Requests</h3>
+    
+    <div *ngIf="cancelRequests.length === 0" class="alert alert-info">
+      No cancel requests available.
+    </div>
+
+    <div *ngFor="let request of cancelRequests" class="card mb-3 border-warning">
+      <div class="card-body">
+        <h5 class="card-title">Booking ID: {{ request.bookingId }}</h5>
+        <p class="card-text"><strong>Reason:</strong> {{ request.reason }}</p>
+        <p class="card-text"><strong>Status:</strong> {{ request.status }}</p>
+        <div class="card-text"><strong>Tour Details:</strong> 
+          <p>Customer Name: {{request.booking.customerName}} </p>
+          <p>Tour Name: {{request.booking.tourName}}</p>
+        </div>
+
+        <!-- <button class="btn btn-success me-2" (click)="approveCancelRequest(request.bookingId)">Approve Cancellation</button>
+        <button class="btn btn-danger" (click)="rejectCancelRequest(request.bookingId)">Reject Cancellation</button> -->
+      </div>
+    </div>
+  </div>
+</div>

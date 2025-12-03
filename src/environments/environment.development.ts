@@ -1,6 +1,6 @@
 export const environment = {
 
-    API_URL: "https://lionsportsclub.runasp.net/api/v1",
-    hubUrl: "https://lionsportsclub.runasp.net/hubs/notifications",
+    API_URL: "http://localhost:5218/api/v1",
+    hubUrl: "http://localhost:5218/hubs/notifications",
     production: false
 };

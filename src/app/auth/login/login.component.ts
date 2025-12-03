@@ -51,7 +51,7 @@ username: string = '';
         console.log('Login successful:', response);
         this.loading = false;
         this.notificationService.startConnection();
-        this.toastService.success('Login successful!');
+        // this.toastService.success('Login successful!');
         this.router.navigate(['/']);
       },
       error: (error) => {

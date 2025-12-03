@@ -16,4 +16,11 @@
           </button>
         </div>
       </div>
+
+          <div *ngFor="let note of notifications">
+      <div class="alert alert-info d-flex justify-content-between align-items-center">
+        <span>{{ note.message }}</span>
+        <button class="btn btn-sm btn-outline-secondary" (click)="markAsRead(note.id)">Mark as Read</button>
+      </div>
+    </div>
     </div>

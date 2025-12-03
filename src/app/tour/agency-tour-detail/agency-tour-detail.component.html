@@ -56,155 +56,133 @@
     </section>
 
     <!-- Tour Information Section -->
-<section class="tour-info mb-5">
-  <div class="card border-0 shadow-sm">
-    <div class="card-header bg-gradient bg-primary text-white d-flex justify-content-between align-items-center py-3">
-      <h2 class="h4 mb-0">
-        <i class="bi bi-info-circle me-2"></i>Tour Information
-      </h2>
-      <button *ngIf="!isEditMode" class="btn btn-light btn-sm" (click)="editTour()">
-        <i class="bi bi-pencil me-2"></i>Quick Edit
-      </button>
-      <div *ngIf="isEditMode" class="d-flex gap-2">
-        <button class="btn btn-success btn-sm" (click)="saveTour()" >
-          <i class="bi bi-check-circle me-2"></i>Save
-        </button>
-        <button class="btn btn-secondary btn-sm" (click)="cancelEdit()">
-          <i class="bi bi-x-circle me-2"></i>Cancel
-        </button>
+    <section class="tour-info mb-5">
+      <div class="card border-0 shadow-sm">
+        <div
+          class="card-header bg-gradient bg-primary text-white d-flex justify-content-between align-items-center py-3">
+          <h2 class="h4 mb-0">
+            <i class="bi bi-info-circle me-2"></i>Tour Information
+          </h2>
+          <button *ngIf="!isEditMode" class="btn btn-light btn-sm" (click)="editTour()">
+            <i class="bi bi-pencil me-2"></i>Quick Edit
+          </button>
+          <div *ngIf="isEditMode" class="d-flex gap-2">
+            <button class="btn btn-success btn-sm" (click)="saveTour()">
+              <i class="bi bi-check-circle me-2"></i>Save
+            </button>
+            <button class="btn btn-secondary btn-sm" (click)="cancelEdit()">
+              <i class="bi bi-x-circle me-2"></i>Cancel
+            </button>
+          </div>
+        </div>
+
+        <div class="card-body p-4" *ngIf="tour">
+          <!-- View Mode -->
+          <div *ngIf="!isEditMode" class="row g-4">
+            <!-- Tour Name -->
+            <div class="col-md-12">
+              <div class="border-start border-primary border-4 ps-3 mb-3">
+                <label class="text-muted small text-uppercase fw-semibold mb-1">Tour Name</label>
+                <h4 class="mb-0 text-dark">{{ tour.tourName }}</h4>
+              </div>
+            </div>
+
+            <!-- Tour Description -->
+            <div class="col-md-12">
+              <div class="border-start border-info border-4 ps-3 mb-3">
+                <label class="text-muted small text-uppercase fw-semibold mb-1">Description</label>
+                <p class="mb-0 text-dark">{{ tour.tourDescription }}</p>
+              </div>
+            </div>
+
+            <!-- Two Column Layout for Details -->
+            <div class="col-md-6">
+              <div class="bg-light rounded p-3 h-100">
+                <div class="d-flex align-items-center mb-3">
+                  <div class="bg-success text-white rounded-circle p-2 me-3">
+                    <i class="bi bi-cash-coin fs-5"></i>
+                  </div>
+                  <div>
+                    <label class="text-muted small mb-0">Price</label>
+                    <h5 class="mb-0 text-success">{{ tour.price | currency }}</h5>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="col-md-6">
+              <div class="bg-light rounded p-3 h-100">
+                <div class="d-flex align-items-center mb-3">
+                  <div class="bg-info text-white rounded-circle p-2 me-3">
+                    <i class="bi bi-calendar-event fs-5"></i>
+                  </div>
+                  <div>
+                    <label class="text-muted small mb-0">Departure Date</label>
+                    <h5 class="mb-0 text-info">{{ tour.departureDate | date:'fullDate' }}</h5>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="col-md-6">
+              <div class="bg-light rounded p-3 h-100">
+                <div class="d-flex align-items-center mb-3">
+                  <div class="bg-danger text-white rounded-circle p-2 me-3">
+                    <i class="bi bi-geo-alt-fill fs-5"></i>
+                  </div>
+                  <div>
+                    <label class="text-muted small mb-0">Destination</label>
+                    <h5 class="mb-0 text-danger">{{ tour.destinationName }}</h5>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Edit Mode -->
+          <form *ngIf="isEditMode" #editTourForm="ngForm" (ngSubmit)="saveTour()">
+            <div class="row g-4">
+              <!-- Tour Name -->
+              <div class="col-md-12">
+                <label class="form-label fw-semibold">Tour Name</label>
+                <input type="text" class="form-control" [(ngModel)]="editedTour.tourName" name="tourName" required>
+              </div>
+
+              <!-- Tour Description -->
+              <div class="col-md-12">
+                <label class="form-label fw-semibold">Description</label>
+                <textarea class="form-control" [(ngModel)]="editedTour.tourDescription" name="tourDescription" rows="4"
+                  required></textarea>
+              </div>
+
+              <!-- Price -->
+              <div class="col-md-6">
+                <label class="form-label fw-semibold">Price</label>
+                <div class="input-group">
+                  <span class="input-group-text">$</span>
+                  <input type="number" class="form-control" [(ngModel)]="editedTour.price" name="price" min="0"
+                    step="0.01" required>
+                </div>
+              </div>
+
+              <!-- Departure Date -->
+              <div class="col-md-6">
+                <label class="form-label fw-semibold">Departure Date</label>
+                <input type="date" class="form-control" [(ngModel)]="editedTour.departureDate" name="departureDate"
+                  required>
+              </div>
+
+              <!-- Destination Name -->
+              <div class="col-md-6">
+                <label class="form-label fw-semibold">Destination</label>
+                <input type="text" class="form-control" [(ngModel)]="editedTour.destinationName" name="destinationName"
+                  required>
+              </div>
+            </div>
+          </form>
+        </div>
       </div>
-    </div>
-    
-    <div class="card-body p-4" *ngIf="tour">
-      <!-- View Mode -->
-      <div *ngIf="!isEditMode" class="row g-4">
-        <!-- Tour Name -->
-        <div class="col-md-12">
-          <div class="border-start border-primary border-4 ps-3 mb-3">
-            <label class="text-muted small text-uppercase fw-semibold mb-1">Tour Name</label>
-            <h4 class="mb-0 text-dark">{{ tour.tourName }}</h4>
-          </div>
-        </div>
-
-        <!-- Tour Description -->
-        <div class="col-md-12">
-          <div class="border-start border-info border-4 ps-3 mb-3">
-            <label class="text-muted small text-uppercase fw-semibold mb-1">Description</label>
-            <p class="mb-0 text-dark">{{ tour.tourDescription }}</p>
-          </div>
-        </div>
-
-        <!-- Two Column Layout for Details -->
-        <div class="col-md-6">
-          <div class="bg-light rounded p-3 h-100">
-            <div class="d-flex align-items-center mb-3">
-              <div class="bg-success text-white rounded-circle p-2 me-3">
-                <i class="bi bi-cash-coin fs-5"></i>
-              </div>
-              <div>
-                <label class="text-muted small mb-0">Price</label>
-                <h5 class="mb-0 text-success">{{ tour.price | currency }}</h5>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <div class="col-md-6">
-          <div class="bg-light rounded p-3 h-100">
-            <div class="d-flex align-items-center mb-3">
-              <div class="bg-info text-white rounded-circle p-2 me-3">
-                <i class="bi bi-calendar-event fs-5"></i>
-              </div>
-              <div>
-                <label class="text-muted small mb-0">Departure Date</label>
-                <h5 class="mb-0 text-info">{{ tour.departureDate | date:'fullDate' }}</h5>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <div class="col-md-6">
-          <div class="bg-light rounded p-3 h-100">
-            <div class="d-flex align-items-center mb-3">
-              <div class="bg-danger text-white rounded-circle p-2 me-3">
-                <i class="bi bi-geo-alt-fill fs-5"></i>
-              </div>
-              <div>
-                <label class="text-muted small mb-0">Destination</label>
-                <h5 class="mb-0 text-danger">{{ tour.destinationName }}</h5>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <!-- Edit Mode -->
-      <form *ngIf="isEditMode" #editTourForm="ngForm" (ngSubmit)="saveTour()">
-        <div class="row g-4">
-          <!-- Tour Name -->
-          <div class="col-md-12">
-            <label class="form-label fw-semibold">Tour Name</label>
-            <input 
-              type="text" 
-              class="form-control" 
-              [(ngModel)]="editedTour.tourName"
-              name="tourName"
-              required>
-          </div>
-
-          <!-- Tour Description -->
-          <div class="col-md-12">
-            <label class="form-label fw-semibold">Description</label>
-            <textarea 
-              class="form-control" 
-              [(ngModel)]="editedTour.tourDescription"
-              name="tourDescription"
-              rows="4"
-              required></textarea>
-          </div>
-
-          <!-- Price -->
-          <div class="col-md-6">
-            <label class="form-label fw-semibold">Price</label>
-            <div class="input-group">
-              <span class="input-group-text">$</span>
-              <input 
-                type="number" 
-                class="form-control" 
-                [(ngModel)]="editedTour.price"
-                name="price"
-                min="0"
-                step="0.01"
-                required>
-            </div>
-          </div>
-
-          <!-- Departure Date -->
-          <div class="col-md-6">
-            <label class="form-label fw-semibold">Departure Date</label>
-            <input 
-              type="date" 
-              class="form-control" 
-              [(ngModel)]="editedTour.departureDate"
-              name="departureDate"
-              required>
-          </div>
-
-          <!-- Destination Name -->
-          <div class="col-md-6">
-            <label class="form-label fw-semibold">Destination</label>
-            <input 
-              type="text" 
-              class="form-control" 
-              [(ngModel)]="editedTour.destinationName"
-              name="destinationName"
-              required>
-          </div>
-        </div>
-      </form>
-    </div>
-  </div>
-</section>
+    </section>
 
     <!-- Terms Management Section -->
     <section class="terms-management mb-5">
@@ -217,7 +195,7 @@
             <i class="bi bi-plus-circle me-2"></i>Add Term
           </button>
         </div>
-        
+
         <div class="card-body">
           <!-- Add Term Form -->
           <div *ngIf="showAddTerm" class="add-form mb-4">
@@ -226,11 +204,7 @@
               Add important terms and conditions for this tour
             </div>
             <div class="mb-3">
-              <textarea 
-                class="form-control" 
-                [(ngModel)]="newTerm" 
-                placeholder="Enter new term"
-                rows="3"></textarea>
+              <textarea class="form-control" [(ngModel)]="newTerm" placeholder="Enter new term" rows="3"></textarea>
             </div>
             <div class="d-flex gap-2">
               <button class="btn btn-primary" (click)="addTerm()">
@@ -244,8 +218,8 @@
 
           <!-- Terms List -->
           <ul class="list-group list-group-flush">
-            <li *ngFor="let term of terms; let i = index" 
-                class="list-group-item d-flex justify-content-between align-items-start border-start border-success border-3">
+            <li *ngFor="let term of terms; let i = index"
+              class="list-group-item d-flex justify-content-between align-items-start border-start border-success border-3">
               <div class="ms-2 me-auto">
                 <div class="d-flex align-items-start">
                   <span class="badge bg-success rounded-circle me-3 mt-1">{{ i + 1 }}</span>
@@ -276,7 +250,7 @@
             <i class="bi bi-plus-circle me-2"></i>Add Note
           </button>
         </div>
-        
+
         <div class="card-body">
           <!-- Add Note Form -->
           <div *ngIf="showAddNote" class="add-form mb-4">
@@ -287,22 +261,14 @@
               </div>
               <div class="mb-3">
                 <label class="form-label fw-semibold">Note Content</label>
-                <textarea 
-                  class="form-control" 
-                  [(ngModel)]="tourNotesData.tourNotes" 
-                  placeholder="Enter new note"
-                  name="tourNotes"
-                  rows="3"
-                  required></textarea>
+                <textarea class="form-control" [(ngModel)]="tourNotesData.tourNotes" placeholder="Enter new note"
+                  name="tourNotes" rows="3" required></textarea>
               </div>
-              
+
               <!-- Status Dropdown -->
               <div class="mb-3">
                 <label class="form-label fw-semibold">Print Status</label>
-                <select class="form-select" 
-                        [(ngModel)]="tourNotesData.status" 
-                        name="status"
-                        required>
+                <select class="form-select" [(ngModel)]="tourNotesData.status" name="status" required>
                   <option value="" disabled>Select Status</option>
                   <option value="TO_BE_PRINTED">
                     <i class="bi bi-printer"></i> To be printed
@@ -331,8 +297,8 @@
                 <div class="d-flex justify-content-between align-items-start">
                   <div class="flex-grow-1">
                     <div class="d-flex align-items-center mb-2">
-                      <span class="badge me-2" 
-                            [ngClass]="note.status === 'TO_BE_PRINTED' ? 'bg-success' : 'bg-secondary'">
+                      <span class="badge me-2"
+                        [ngClass]="note.status === 'TO_BE_PRINTED' ? 'bg-success' : 'bg-secondary'">
                         <i class="bi" [ngClass]="note.status === 'TO_BE_PRINTED' ? 'bi-printer' : 'bi-eye-slash'"></i>
                         {{ note.status === 'TO_BE_PRINTED' ? 'Print' : 'No Print' }}
                       </span>
@@ -353,23 +319,95 @@
         </div>
       </div>
     </section>
-        <div class="col-md-6">
-          <div class="bg-light rounded p-3 h-100">
-            <div class="d-flex align-items-center mb-3">
-              <div class="bg-warning text-white rounded-circle p-2 me-3">
-                <i class="bi bi-person-add fs-5"></i>
-              </div>
-              <div>
-                <label class="text-muted small mb-0">Created By</label>
-                <h5 class="mb-0 text-dark">{{ tour.consultantName }}</h5>
-              </div>
+
+    <!-- Tour Status -->
+    <section class="mb-4">
+      <div class="card shadow-sm">
+        <div class="card-body">
+          <h5 class="card-title mb-3">
+            <i class="bi bi-flag-fill me-2"></i>Tour Status
+          </h5>
+          <form>
+            <div class="mb-3">
+              <label for="tourStatus" class="form-label fw-semibold">Current Status</label>
+              <select class="form-select form-select-lg" id="tourStatus" name="tourStatus" [value]="selectedStatus"
+                (change)="onStatusChange($event)">
+                <option value="SAVE">Save</option>
+                <option value="SUBMIT">Submit</option>
+                <option value="APPROVED">Approve</option>
+                <option value="ONHOLD">Hold</option>
+                <option value="CLOSED">Close</option>
+                <option value="CANCELLED">Cancel</option>
+              </select>
+            </div>
+
+            <!-- Status Badge Display -->
+            <div class="mt-3">
+              <span class="badge" [ngClass]="getStatusBadgeClass()">
+                {{ selectedStatus }}
+              </span>
+            </div>
+          </form>
+        </div>
+      </div>
+    </section>
+
+    <!-- Confirmation Modal -->
+    <div class="modal fade" id="statusChangeModal" tabindex="-1" aria-labelledby="statusChangeModalLabel"
+      aria-hidden="true" data-bs-backdrop="static" data-bs-keyboard="false">
+      <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+          <div class="modal-header border-0">
+            <h5 class="modal-title" id="statusChangeModalLabel">
+              <i class="bi bi-exclamation-triangle-fill text-warning me-2"></i>
+              Confirm Status Change
+            </h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"
+              (click)="cancelStatusChange()"></button>
+          </div>
+          <div class="modal-body">
+            <p class="mb-1">Are you sure you want to change the tour status?</p>
+            <div class="mt-3">
+              <strong>From:</strong>
+              <span class="badge" [ngClass]="getStatusBadgeClass(selectedStatus)">
+                {{ selectedStatus }}
+              </span>
+              <i class="bi bi-arrow-right mx-2"></i>
+              <strong>To:</strong>
+              <span class="badge" [ngClass]="getStatusBadgeClass(pendingStatus)">
+                {{ pendingStatus }}
+              </span>
             </div>
           </div>
+          <div class="modal-footer border-0">
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" (click)="cancelStatusChange()">
+              <i class="bi bi-x-lg me-1"></i>Cancel
+            </button>
+            <button type="button" class="btn btn-primary" data-bs-dismiss="modal" (click)="confirmStatusChange()">
+              <i class="bi bi-check-lg me-1"></i>Confirm
+            </button>
+          </div>
         </div>
+      </div>
+    </div>
+
+    <div class="col-md-6">
+      <div class="bg-light rounded p-3 h-100">
+        <div class="d-flex align-items-center mb-3">
+          <div class="bg-warning text-white rounded-circle p-2 me-3">
+            <i class="bi bi-person-add fs-5"></i>
+          </div>
+          <div>
+            <label class="text-muted small mb-0">Created By</label>
+            <h5 class="mb-0 text-dark">{{ tour.consultantName }}</h5>
+          </div>
+        </div>
+      </div>
+    </div>
   </div>
 
   <!-- Fixed Bottom Action Bar -->
-  <div class="fixed-bottom bg-white border-top p-3 shadow-lg" style="z-index: 1020;">
+  <!-- <div class="fixed-bottom bg-white border-top p-3 shadow-lg" style="z-index: 1020;">
     <div class="container">
       <div class="d-flex justify-content-between align-items-center flex-wrap gap-2">
         <button class="btn btn-outline-secondary" (click)="goBack()">
@@ -389,7 +427,7 @@
         </div>
       </div>
     </div>
-  </div>
+  </div> -->
 </div>
 
 <!-- Loading Spinner -->

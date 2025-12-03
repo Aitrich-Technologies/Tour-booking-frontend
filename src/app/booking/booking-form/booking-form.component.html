@@ -15,7 +15,7 @@
 
   <form [formGroup]="bookingForm" (ngSubmit)="onSubmit()" class="booking-form">
     <div class="info-box">
-      <p><strong>Important:</strong> Please ensure all information is accurate. If providing passport information, 
+      <p><strong>Important:</strong> Please ensure all information is accurate. If providing passport information,
         it must match your travel document exactly and be valid for at least 6 months from your travel date.</p>
     </div>
 
@@ -152,7 +152,6 @@
           <label>Participant Type</label>
           <select formControlName="participantType">
             <option selected>Select</option>
-            <option value="Adult">Adult</option>
             <option value="Staff">Staff</option>
             <option value="Family">Family</option>
             <option value="Player">Player</option>

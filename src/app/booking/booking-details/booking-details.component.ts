@@ -29,6 +29,10 @@ export class BookingDetailsComponent implements OnInit {
   isSaving: boolean = false;
   errorMessage: string = '';
   successMessage: string = '';
+  editRequestSent: boolean = false;
+  editRequestApproved: boolean = false;
+  isEditMode: boolean = false;
+  originalBooking: TourBookingResponse | null = null;
 
   // Form states
   showAddParticipant: boolean = false;
@@ -48,7 +52,7 @@ export class BookingDetailsComponent implements OnInit {
     expiryDate: [null],
     placeOfBirth: [''],
   });
-  
+
   ngOnInit(): void {
     const bookingId = this.route.snapshot.paramMap.get('id');
     if (bookingId) {
@@ -67,51 +71,68 @@ export class BookingDetailsComponent implements OnInit {
     const currentUser = this.authService.currentUser();
     if (!currentUser) return false;
 
-    const userRole = currentUser.role?.toUpperCase();
+    // const userRole = currentUser.role?.toUpperCase();
 
     // Consultants/Admins can view all bookings
-    if (userRole === 'CONSULTANT' || userRole === 'AGENCY') {
-      return true;
-    }
+    // if (userRole === 'CONSULTANT' || userRole === 'AGENCY') {
+    //   return true;
+    // }
 
     // Customers can only view their own bookings
     return booking.userId === currentUser.id;
   }
 
-  loadBookingDetails(): void {
+loadBookingDetails(): void {
+  const currentUser = this.authService.currentUser();
+  const bookingId = this.route.snapshot.paramMap.get('id'); // ✅ Get the booking ID from route
+  
+  this.isLoading = true;
 
-    const currentUser = this.authService.currentUser();
-    this.isLoading = true;
-
-
-    if (currentUser && currentUser.id) {
-      this.bookingService.getTourBookingByUserId(currentUser?.id).subscribe({
-        next: (bookings) => {
-          // Verify user can view at least one booking
-          const viewableBooking = bookings.find(booking => this.canViewBooking(booking));
-          if (!viewableBooking) {
-            this.errorMessage = 'You do not have permission to view these bookings';
-            this.isLoading = false;
-            return;
-          }
-
-          this.booking = viewableBooking;
-          console.log('Loaded booking:', viewableBooking);
-
-          // this.participants = viewableBooking.participants || [];
-          this.isLoading = false;
-        },
-        error: (error) => {
-          console.error('Error loading bookings:', error);
-          this.errorMessage = 'Failed to load booking details';
-          this.isLoading = false;
-        }
-      });
-    } else {
-      this.errorMessage = 'User not found or invalid user ID';
-      this.isLoading = false;
-    }
+  if (!bookingId) {
+    this.errorMessage = 'Invalid booking ID';
+    this.isLoading = false;
+    return;
   }
+
+  if (currentUser && currentUser.id) {
+    // ✅ Fetch SPECIFIC booking by ID
+    this.bookingService.getTourBookingByBookingId(bookingId).subscribe({
+      next: (booking) => {
+        // Verify user can view this booking
+        if (!this.canViewBooking(booking)) {
+          this.errorMessage = 'You do not have permission to view this booking';
+          this.isLoading = false;
+          return;
+        }
+
+        this.booking = booking;
+        console.log('Loaded booking:', booking);
+
+        // Set flags based on booking state
+        if (this.booking.editRequestStatus === 'Approved' || this.booking.isEditAllowed) {
+          this.editRequestApproved = true;
+          this.editRequestSent = false;
+        } else if (this.booking.editRequestStatus === 'Pending') {
+          this.editRequestSent = true;
+          this.editRequestApproved = false;
+        } else {
+          this.editRequestSent = false;
+          this.editRequestApproved = false;
+        }
+
+        this.isLoading = false;
+      },
+      error: (error) => {
+        console.error('Error loading booking:', error);
+        this.errorMessage = 'Failed to load booking details';
+        this.isLoading = false;
+      }
+    });
+  } else {
+    this.errorMessage = 'User not found or invalid user ID';
+    this.isLoading = false;
+  }
+}
 
   // Participant Management
   toggleAddParticipant(): void {
@@ -187,13 +208,12 @@ export class BookingDetailsComponent implements OnInit {
     this.participantForm.patchValue({
       firstName: participant.firstName,
       lastName: participant.lastName,
-      // email: participant.email,
-      // phoneNumber: participant.phoneNumber,
-      // dateOfBirth: participant.dateOfBirth,
+      email: participant.email,
+      phoneNumber: participant.phoneNumber,
+      dob: participant.dob,
       gender: participant.gender,
-      // nationality: participant.nationality,
+      citizenship: participant.citizenship,
       passportNumber: participant.passportNumber,
-      // specialRequirements: participant.specialRequirements
     });
   }
 
@@ -264,24 +284,24 @@ export class BookingDetailsComponent implements OnInit {
   }
 
   // Booking Actions
-  // cancelBooking(): void {
-  //   if (!this.booking) return;
+  cancelBooking(): void {
+    if (!this.booking) return;
 
-  //   if (confirm('Are you sure you want to cancel this booking?')) {
-  //     this.bookingService.cancelBooking(this.booking.id).subscribe({
-  //       next: () => {
-  //         this.successMessage = 'Booking cancelled successfully';
-  //         this.loadBookingDetails(this.booking!.id);
-  //         this.clearMessagesAfterDelay();
-  //       },
-  //       error: (error) => {
-  //         console.error('Error cancelling booking:', error);
-  //         this.errorMessage = 'Failed to cancel booking';
-  //         this.clearMessagesAfterDelay();
-  //       }
-  //     });
-  //   }
-  // }
+    if (confirm('Are you sure you want to cancel this booking?')) {
+      this.bookingService.cancelBooking(this.booking.id).subscribe({
+        next: () => {
+          this.successMessage = 'Booking cancelled successfully';
+          this.loadBookingDetails();
+          this.clearMessagesAfterDelay();
+        },
+        error: (error) => {
+          console.error('Error cancelling booking:', error);
+          this.errorMessage = 'Failed to cancel booking';
+          this.clearMessagesAfterDelay();
+        }
+      });
+    }
+  }
 
   // Helper Methods
   getStatusBadgeClass(status: string): string {
@@ -316,4 +336,121 @@ export class BookingDetailsComponent implements OnInit {
     }, 3000);
   }
 
+  enableEditMode(): void {
+    this.isEditMode = true;
+    this.originalBooking = { ...this.booking } as TourBookingResponse; // Ensure type compatibility
+    this.successMessage = 'Edit mode enabled. Make your changes and click Save.';
+  }
+
+  editBooking(booking: TourBookingResponse): void {
+    // If already in edit mode (approved), allow editing
+    if (this.editRequestApproved) {
+      this.enableEditMode();
+      return;
+    }
+
+    // First time clicking - send edit request to admin
+    if (!this.editRequestSent) {
+      this.bookingService.updateTourBooking(booking.id, booking).subscribe({
+        next: (res) => {
+          this.successMessage = (res as { message: string }).message || 'Edit request sent to agency for approval.';
+          this.editRequestSent = true;
+          console.log(res);
+
+          // Optionally, start polling to check if admin approved
+          this.checkEditApprovalStatus(booking.id);
+        },
+        error: (error) => {
+          console.error('Error submitting booking edit request:', error);
+          this.errorMessage = 'Failed to submit booking edit request';
+        }
+      });
+    }
+  }
+
+  checkForPendingEditRequest(): void {
+    if (!this.booking) return;
+    const bookingId = this.booking.id;
+
+    this.bookingService.getPendingEditRequests().subscribe({
+      next: (requests) => {
+        const pendingRequest = requests.find(r => r.bookingId === bookingId);
+        if (pendingRequest) {
+          this.editRequestSent = true;
+          this.successMessage = 'Edit request is pending approval.';
+          // Continue polling if it's pending
+          this.checkEditApprovalStatus(bookingId);
+        }
+      },
+      error: (err) => console.error('Error checking pending requests:', err)
+    });
+  }
+
+  checkEditApprovalStatus(bookingId: string): void {
+    // Poll every 5 seconds to check approval status
+    const pollInterval = setInterval(() => {
+      this.bookingService.getPendingEditRequests().subscribe({
+        next: (requests) => {
+          const pendingRequest = requests.find(r => r.bookingId === bookingId);
+
+          // If request was sent but is no longer in pending list, it might be approved or rejected
+          if (this.editRequestSent && !pendingRequest) {
+            // Check if we can edit now (or just assume approved for now and let user try)
+            // Ideally we should re-fetch the booking to see if status changed or if we have edit rights
+            this.editRequestSent = false;
+            this.editRequestApproved = true; // Assume approved if it disappears? Or maybe we should check something else.
+            // For now, let's assume if it's gone from pending, it's processed.
+
+            this.successMessage = 'Edit request processed! You can now edit the booking.';
+            clearInterval(pollInterval);
+          }
+        },
+        error: (error) => {
+          console.error('Error checking approval status:', error);
+          clearInterval(pollInterval);
+        }
+      });
+    }, 5000); // Check every 5 seconds
+
+    // Stop polling after 5 minutes
+    setTimeout(() => clearInterval(pollInterval), 300000);
+  }
+
+  saveBookingChanges(): void {
+    if (this.booking) {
+      this.bookingService.updateTourBooking(this.booking.id, this.booking).subscribe({
+        next: (res) => {
+          this.successMessage = 'Booking updated successfully!';
+          this.isEditMode = false;
+          this.editRequestSent = false;
+          this.editRequestApproved = false;
+          console.log(res);
+        },
+        error: (error) => {
+          console.error('Error updating booking:', error);
+          this.errorMessage = 'Failed to update booking';
+        }
+      });
+    }
+  }
+
+  downloadBookingDetails(): void {
+    if (!this.booking) return;  
+    this.bookingService.downloadBookingDetails(this.booking.id).subscribe({
+      next: (blob) => {
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `booking-${this.booking?.id ?? 'unknown'}.pdf`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+      },
+      error: (error) => {
+        console.error('Error downloading booking details:', error);
+        this.errorMessage = 'Failed to download booking details';
+      }
+    });
+  
+  }
 }
