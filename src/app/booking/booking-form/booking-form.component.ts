@@ -11,7 +11,7 @@ import { ToastService } from '../../shared/services/toast.service';
 
 @Component({
   selector: 'app-booking-form',
-  imports: [CommonModule,ReactiveFormsModule],
+  imports: [CommonModule, ReactiveFormsModule],
   templateUrl: './booking-form.component.html',
   styleUrl: './booking-form.component.css'
 })
@@ -39,7 +39,7 @@ export class BookingFormComponent {
     if (navigation?.extras.state) {
       this.selectedTour = navigation.extras.state['tour'];
       console.log('Tour received from state:', this.selectedTour);
-      
+
       // Set tourId from the tour object if available
       if (this.selectedTour && this.selectedTour.id) {
         this.tourId = this.selectedTour.id;
@@ -51,18 +51,18 @@ export class BookingFormComponent {
   ngOnInit(): void {
     // Get userId first
     this.userId = this.authService.currentUser()?.id || ''; // Ensure user is logged in
-    
+
     // Get tourId from route parameter
     this.routeSubscription = this.route.paramMap.subscribe(params => {
       const urlTourId = params.get('id') || '';
       console.log('Tour ID from URL:', urlTourId);
-      
+
       // Use tourId from URL if we don't have it from state
       if (!this.tourId && urlTourId) {
         this.tourId = urlTourId;
         console.log('Using Tour ID from URL:', this.tourId);
       }
-      
+
       if (this.tourId) {
         if (!this.selectedTour) {
           console.warn('No tour data received from state. Tour info will not be displayed.');
@@ -71,7 +71,7 @@ export class BookingFormComponent {
         } else {
           console.log('Using tour data from state:', this.selectedTour);
         }
-        
+
         this.initializeForm();
       } else {
         console.error('No tour ID available');
@@ -95,8 +95,8 @@ export class BookingFormComponent {
 
   initializeForm(): void {
     this.bookingForm = this.fb.group({
-      tourId: [this.tourId, Validators.required], 
-      userId:[this.userId], 
+      tourId: [this.tourId, Validators.required],
+      userId: [this.userId],
       firstName: ['', Validators.required],
       lastName: ['', Validators.required],
       gender: ['', Validators.required],
@@ -106,22 +106,22 @@ export class BookingFormComponent {
       issueDate: [null],
       expiryDate: [null],
       placeOfBirth: [''],
-      leadPassenger: [''],
+      leadPassenger: [false],
       participantType: [''],
-      status: ['SAVE']
+      status: ['SUBMIT']
     });
     console.log('Form initialized with tourId:', this.tourId);
   }
 
-  
+
 
   onSubmit(): void {
     if (this.bookingForm.valid) {
       this.loading = true;
       const bookingData: TourBooking = this.bookingForm.value;
-      
+
       console.log('Booking Data (only tourId sent to backend):', JSON.stringify(bookingData, null, 2));
-      
+
       // Call your booking service here
       this.bookingService.bookTour(bookingData).subscribe({
         next: (response) => {

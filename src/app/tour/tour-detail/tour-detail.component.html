@@ -7,13 +7,13 @@
     </a>
   </div>
 
-    <!-- Main Tour Card -->
-  @if(tour){  
+  <!-- Main Tour Card -->
+  @if(tour){
   <div class="card shadow-lg border-0 overflow-hidden">
     <div class="row g-0">
       <!-- Tour Image -->
       <div class="col-lg-5">
-        <div class="position-relative h-50" >
+        <div class="position-relative h-50">
           <img [src]="tour.imageUrl" [alt]="tour.tourName" class="w-100 h-100" style="object-fit: cover;"
             (error)="onImageError($event)">
 
@@ -25,40 +25,40 @@
           </div>
         </div>
 
-      <!-- Key Information Cards -->
-          <div class="row g-3 px-2 mt-5 py-5">
-            <!-- Duration -->
-            <div class="col-sm-6" *ngIf="tour?.noOfNights">
-              <div class="border rounded-3 p-3 h-100">
-                <div class="d-flex align-items-center">
-                  <div class="bg-primary bg-opacity-10 rounded-circle p-2 me-3">
-                    <i class="bi bi-moon-stars text-primary fs-5"></i>
-                  </div>
-                  <div>
-                    <div class="small text-muted">Duration</div>
-                    <div class="fw-semibold">{{ tour.noOfNights }} Nights</div>
-                  </div>
+        <!-- Key Information Cards -->
+        <div class="row g-3 px-2 mt-5 py-5">
+          <!-- Duration -->
+          <div class="col-sm-6" *ngIf="tour?.noOfNights">
+            <div class="border rounded-3 p-3 h-100">
+              <div class="d-flex align-items-center">
+                <div class="bg-primary bg-opacity-10 rounded-circle p-2 me-3">
+                  <i class="bi bi-moon-stars text-primary fs-5"></i>
+                </div>
+                <div>
+                  <div class="small text-muted">Duration</div>
+                  <div class="fw-semibold">{{ tour.noOfNights }} Nights</div>
                 </div>
               </div>
             </div>
+          </div>
 
-            <!-- Dates -->
-            <div class="col-sm-6" *ngIf="tour?.departureDate && tour?.arrivalDate">
-              <div class="border rounded-3 p-3 h-100">
-                <div class="d-flex align-items-center">
-                  <div class="bg-warning bg-opacity-10 rounded-circle p-2 me-3">
-                    <i class="bi bi-calendar-event text-warning fs-5"></i>
-                  </div>
-                  <div>
-                    <div class="small text-muted">Travel Dates</div>
-                    <div class="fw-semibold">
-                      {{ tour.departureDate | date:'MMM d' }} - {{ tour.arrivalDate | date:'MMM d, y' }}
-                    </div>
+          <!-- Dates -->
+          <div class="col-sm-6" *ngIf="tour?.departureDate && tour?.arrivalDate">
+            <div class="border rounded-3 p-3 h-100">
+              <div class="d-flex align-items-center">
+                <div class="bg-warning bg-opacity-10 rounded-circle p-2 me-3">
+                  <i class="bi bi-calendar-event text-warning fs-5"></i>
+                </div>
+                <div>
+                  <div class="small text-muted">Travel Dates</div>
+                  <div class="fw-semibold">
+                    {{ tour.departureDate | date:'MMM d' }} - {{ tour.arrivalDate | date:'MMM d, y' }}
                   </div>
                 </div>
               </div>
             </div>
           </div>
+        </div>
       </div>
 
       <!-- Tour Details -->
@@ -139,7 +139,7 @@
       </div>
     </div>
   </div>
-}
+  }
 
   <!-- Additional Information Section -->
   <div class="row mt-4 g-4">

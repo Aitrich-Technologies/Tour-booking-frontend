@@ -14,7 +14,7 @@ import { FormsModule } from '@angular/forms';
 })
 export class TourCatalogComponent implements OnInit {
 
-    private tourService = inject(TourServiceService);
+  private tourService = inject(TourServiceService);
   authService = inject(AuthService);
   private router = inject(Router);
 
@@ -32,7 +32,8 @@ export class TourCatalogComponent implements OnInit {
   tours: TourResponse[] = [];
   filteredTours: TourResponse[] = [];
   displayedTours: TourResponse[] = [];
-  
+  selectedStatus: string = '';
+
   // State
   isLoading: boolean = true;
   searchTerm: string = '';
@@ -52,17 +53,17 @@ export class TourCatalogComponent implements OnInit {
   loadTours(): void {
     this.isLoading = true;
     console.log('Starting to load tours...');
-    
-    this.tourService.getAllTour().subscribe({
+
+    this.tourService.displayUncustomizedTour().subscribe({
       next: (tours) => {
         console.log('API Response - Total tours:', tours.length);
         console.log('Tours data:', tours);
-        
+
         // Filter tours based on availability and customer access
         this.tours = tours.filter(tour => this.canViewTour(tour));
-        
+
         console.log('After filtering - Tours to show:', this.tours.length);
-        
+
         this.filterTours();
         this.isLoading = false;
       },
@@ -75,6 +76,12 @@ export class TourCatalogComponent implements OnInit {
     });
   }
 
+  onStatusChange(event: Event): void {
+    const selectElement = event.target as HTMLSelectElement;
+    this.selectedStatus = selectElement.value;
+    this.filterTours();
+  }
+
   /**
    * Check if the current user can view this tour
    * Rules:
@@ -84,12 +91,12 @@ export class TourCatalogComponent implements OnInit {
    */
   canViewTour(tour: TourResponse): boolean {
     // First check if tour is available
-    if (!this.isTourAvailable(tour)) {
-      return false;
-    }
+    // if (!this.isTourAvailable(tour)) {
+    //   return false;
+    // }
 
     const currentUser = this.authService.currentUser();
-    
+
     // If tour has no customerId, it's a public tour - everyone can see it
     if (!tour.customerId) {
       return true;
@@ -103,7 +110,7 @@ export class TourCatalogComponent implements OnInit {
     // If tour has a customerId, only that customer can see it
     // Also allow consultants/admins to see all tours
     const userRole = currentUser.role?.toUpperCase();
-    
+
     if (userRole === UserRole.CONSULTANT || userRole === UserRole.AGENCY) {
       return true; // Consultants and admins can see all tours
     }
@@ -115,10 +122,17 @@ export class TourCatalogComponent implements OnInit {
   filterTours(): void {
     let filtered = [...this.tours];
 
+    // Status filter
+    if (this.selectedStatus) {
+      filtered = filtered.filter(tour =>
+        tour.status === this.selectedStatus
+      );
+    }
+
     // Search filter
     if (this.searchTerm) {
       const term = this.searchTerm.toLowerCase();
-      filtered = filtered.filter(tour => 
+      filtered = filtered.filter(tour =>
         tour.tourName.toLowerCase().includes(term) ||
         tour.tourDescription?.toLowerCase().includes(term)
       );
@@ -130,7 +144,7 @@ export class TourCatalogComponent implements OnInit {
   }
 
   sortTours(): void {
-    switch(this.sortBy) {
+    switch (this.sortBy) {
       case 'popular':
         this.filteredTours.sort((a, b) => (Number(b.id) || 0) - (Number(a.id) || 0));
         break;
@@ -177,11 +191,11 @@ export class TourCatalogComponent implements OnInit {
     const maxVisible = 5;
     let start = Math.max(1, this.currentPage - Math.floor(maxVisible / 2));
     let end = Math.min(this.totalPages, start + maxVisible - 1);
-    
+
     if (end - start < maxVisible - 1) {
       start = Math.max(1, end - maxVisible + 1);
     }
-    
+
     for (let i = start; i <= end; i++) {
       pages.push(i);
     }
@@ -193,22 +207,22 @@ export class TourCatalogComponent implements OnInit {
   }
 
   getViewButtonText(): string {
-    return this.authService.isAuthenticated() 
-      ? 'View Details' 
+    return this.authService.isAuthenticated()
+      ? 'View Details'
       : 'View & Book';
   }
 
   // Helper methods
-  isTourAvailable(tour: TourResponse): boolean {
-    if (tour.arrivalDate) {
-      const arrivalDate = new Date(tour.arrivalDate);
-      return arrivalDate > new Date();
-    }
-    return true;
-  }
+  // isTourAvailable(tour: TourResponse): boolean {
+  //   if (tour.arrivalDate) {
+  //     const arrivalDate = new Date(tour.arrivalDate);
+  //     return arrivalDate > new Date();
+  //   }
+  //   return true;
+  // }
 
   getTourImage(tour: TourResponse): string {
-    return tour.imageUrl ;
+    return tour.imageUrl;
   }
 
   getDestinationName(destinationName: string): string {
@@ -217,7 +231,7 @@ export class TourCatalogComponent implements OnInit {
 
   truncateDescription(description: string, maxLength: number = 100): string {
     if (!description) return 'No description available';
-    return description.length > maxLength 
+    return description.length > maxLength
       ? description.substring(0, maxLength) + '...'
       : description;
   }

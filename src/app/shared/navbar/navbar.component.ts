@@ -1,8 +1,10 @@
-import { Component, inject, OnInit } from '@angular/core';
+import { Component, HostListener, inject, OnInit } from '@angular/core';
 import { Router, RouterModule } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { AuthService, UserRole } from '../../auth/services/auth.service';
 import { HasRoleDirective } from '../directives/has-role.directive';
+import { SignalrService } from '../services/signalr.service';
+import { NotificationService } from '../services/notification.service';
 
 interface NavItem {
   label: string;
@@ -21,8 +23,11 @@ interface NavItem {
 export class NavbarComponent implements OnInit {
   private router = inject(Router);
   authService = inject(AuthService);
+  notificationService = inject(NotificationService);
+  private signalrService = inject(SignalrService);
   
   UserRole = UserRole;
+  showNotifications = false;
 
   navItems: NavItem[] = [
     {
@@ -40,14 +45,12 @@ export class NavbarComponent implements OnInit {
       route: '/destinations',
       roles: []
     },
-    // Customer-specific
     {
       label: 'My Bookings',
       route: '/bookings',
       roles: [UserRole.CUSTOMER],
       requiresAuth: true
     },
-    // Consultant/Agency-specific (combined since they're in same org)
     {
       label: 'Manage Tours',
       route: '/tour/manage',
@@ -66,6 +69,12 @@ export class NavbarComponent implements OnInit {
       roles: [UserRole.AGENCY],
       requiresAuth: true
     },
+    {
+      label: 'Edit Requests',
+      route: '/edit-requests',
+      roles: [UserRole.AGENCY, UserRole.CONSULTANT],
+      requiresAuth: true
+    }
   ];
 
   ngOnInit(): void {
@@ -74,6 +83,86 @@ export class NavbarComponent implements OnInit {
         error: (err) => console.error('Failed to load user:', err)
       });
     }
+
+    // Start SignalR connection and load notifications if authenticated
+    if (this.authService.isAuthenticated()) {
+      this.signalrService.startConnection();
+      this.notificationService.loadNotifications();
+    }
+  }
+
+  ngOnDestroy(): void {
+    // Stop SignalR connection when component is destroyed
+    this.signalrService.stopConnection();
+  }
+
+  // Close notifications dropdown when clicking outside
+  @HostListener('document:click', ['$event'])
+  onDocumentClick(event: MouseEvent): void {
+    const target = event.target as HTMLElement;
+    const clickedInside = target.closest('.notification-dropdown, .notification-bell');
+    
+    if (!clickedInside && this.showNotifications) {
+      this.showNotifications = false;
+    }
+  }
+
+  toggleNotifications(event: Event): void {
+    event.stopPropagation();
+    this.showNotifications = !this.showNotifications;
+    
+    // Reload notifications when opening
+    if (this.showNotifications) {
+      this.notificationService.loadNotifications();
+    }
+  }
+
+  markAsRead(notificationId: string, event: Event): void {
+    event.stopPropagation();
+    this.notificationService.markAsRead(notificationId);
+  }
+
+  markAllAsRead(event: Event): void {
+    event.stopPropagation();
+    this.notificationService.markAllAsRead();
+  }
+
+  deleteNotification(notificationId: string, event: Event): void {
+    event.stopPropagation();
+    this.notificationService.deleteNotification(notificationId);
+  }
+
+  handleNotificationClick(notification: any): void {
+    if (!notification.isRead) {
+      this.notificationService.markAsRead(notification.id);
+    }
+    if (notification.link) {
+      this.router.navigate([notification.link]);
+      this.showNotifications = false;
+    }
+  }
+
+  getNotificationIcon(type: string): string {
+    switch(type) {
+      case 'success': return 'bi-check-circle-fill text-success';
+      case 'warning': return 'bi-exclamation-triangle-fill text-warning';
+      case 'error': return 'bi-x-circle-fill text-danger';
+      default: return 'bi-info-circle-fill text-primary';
+    }
+  }
+
+  getTimeAgo(date: Date): string {
+    const now = new Date();
+    const notificationDate = new Date(date);
+    const diff = now.getTime() - notificationDate.getTime();
+    const minutes = Math.floor(diff / 60000);
+    const hours = Math.floor(minutes / 60);
+    const days = Math.floor(hours / 24);
+
+    if (days > 0) return `${days}d ago`;
+    if (hours > 0) return `${hours}h ago`;
+    if (minutes > 0) return `${minutes}m ago`;
+    return 'Just now';
   }
 
   openSignupModal(): void {
@@ -85,6 +174,7 @@ export class NavbarComponent implements OnInit {
   }
 
   logout(): void {
+    this.signalrService.stopConnection();
     this.authService.logout();
   }
 

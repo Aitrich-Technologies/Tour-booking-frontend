@@ -19,9 +19,11 @@ export class ConsultantDashboardComponent {
 
   consultants = signal<Consultant[]>([]);
   showModal = signal(false);
+  showViewModal = signal(false);
   editingConsultant = signal<Consultant | null>(null);
+  selectedConsultant = signal<Consultant | null>(null);
   isLoading = signal(false);
-  showPassword = false
+  showPassword = false;
 
   consultantForm: FormGroup;
 
@@ -43,12 +45,10 @@ export class ConsultantDashboardComponent {
   }
 
   loadConsultants(): void {
-
     this.sharedService.getAllUsers().subscribe({
       next: (data) => this.consultants.set(data.filter((user: Consultant) => user.role === 'CONSULTANT')),
       error: (err) => console.error('Failed to load consultants', err)
     });
-
   }
 
   openAddModal(): void {
@@ -56,6 +56,24 @@ export class ConsultantDashboardComponent {
     this.consultantForm.reset();
     this.consultantForm.get('password')?.setValidators([Validators.required, Validators.minLength(6)]);
     this.showModal.set(true);
+  }
+
+  viewConsultant(consultant: Consultant): void {
+    this.selectedConsultant.set(consultant);
+    this.showViewModal.set(true);
+  }
+
+  closeViewModal(): void {
+    this.showViewModal.set(false);
+    this.selectedConsultant.set(null);
+  }
+
+  editFromView(): void {
+    const consultant = this.selectedConsultant();
+    if (consultant) {
+      this.closeViewModal();
+      this.editConsultant(consultant);
+    }
   }
 
   editConsultant(consultant: Consultant): void {
@@ -105,13 +123,8 @@ export class ConsultantDashboardComponent {
     });
   }
 
-  viewConsultant(consultant: Consultant): void {
-    alert(`View consultant details for: ${consultant.firstName} ${consultant.lastName}`);
-    // Navigate to detail page or show detail modal
-  }
-
-  togglePassword(){
-    this.showPassword = !this.showPassword
+  togglePassword(): void {
+    this.showPassword = !this.showPassword;
   }
 
   activateConsultant(id: string): void {
@@ -168,5 +181,4 @@ export class ConsultantDashboardComponent {
     const field = this.consultantForm.get(fieldName);
     return !!(field && field.invalid && field.touched);
   }
-
 }

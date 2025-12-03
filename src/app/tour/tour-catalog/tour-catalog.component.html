@@ -32,6 +32,26 @@
       </div>
     </div>
 
+  <div class="col-md-3">
+    <div class="mb-3">
+      <label for="tourStatus" class="form-label fw-semibold">Current Status</label>
+      <select 
+        class="form-select form-select-lg" 
+        id="tourStatus" 
+        name="tourStatus"
+        [(ngModel)]="selectedStatus"
+        (change)="onStatusChange($event)">
+        <option value="">All Statuses</option>
+        <option value="SAVE">Save</option>
+        <option value="SUBMIT">Submit</option>
+        <option value="APPROVED">Approve</option>
+        <option value="ONHOLD">Hold</option>
+        <option value="CLOSED">Close</option>
+        <option value="CANCELLED">Cancel</option>
+      </select>
+    </div>
+  </div>
+
     <div class="col-md-3">
       <select class="form-select" [(ngModel)]="sortBy" (change)="sortTours()">
         <option value="popular">Most Popular</option>

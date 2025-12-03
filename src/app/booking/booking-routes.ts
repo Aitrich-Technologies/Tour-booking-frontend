@@ -16,11 +16,6 @@ export const BOOKING_ROUTES: Routes = [
         ]
     },
     {
-        path: 'booking-info/:id',
-        loadComponent: () => import('./booking-info/booking-info.component')
-            .then(m => m.BookingInfoComponent)
-    },
-    {
         path: '',
         loadComponent: () => import('./list-bookings/list-bookings.component')
             .then(c => c.ListBookingsComponent)
@@ -29,6 +24,11 @@ export const BOOKING_ROUTES: Routes = [
         path: ':id',
         loadComponent: () => import('./booking-details/booking-details.component')
             .then(m => m.BookingDetailsComponent)
+    },
+    {
+        path: 'booking-info/:id',
+        loadComponent: () => import('./booking-info/booking-info.component')
+            .then(m => m.BookingInfoComponent)
     },
     {
         path: 'booking-form/:tourId',

@@ -3,10 +3,11 @@ import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { BookingService } from '../services/booking.service';
 import { TourBookingResponse } from '../model/tourBooking';
 import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
 
 @Component({
   selector: 'app-booking-info',
-  imports: [CommonModule, RouterModule],
+  imports: [CommonModule, RouterModule, FormsModule],
   templateUrl: './booking-info.component.html',
   styleUrl: './booking-info.component.css'
 })
@@ -16,6 +17,17 @@ export class BookingInfoComponent {
   error: string | null = null;
   bookingId: string = '';
   expandedParticipant: string | null = null;
+  
+  // Edit mode properties
+  editMode: boolean = false;
+  editedBooking: any = null;
+  saving: boolean = false;
+  saveError: string | null = null;
+  
+  // Status management
+  bookingStatuses = ['SUBMITTED', 'CONFIRMED', 'REJECTED', 'CLOSED'];
+  selectedStatus: string = '';
+  statusUpdateSuccess: string | null = null;
 
   constructor(
     private route: ActivatedRoute,
@@ -35,7 +47,6 @@ export class BookingInfoComponent {
 
   loadBookingDetail(): void {
     this.loading = true;
-    // Assuming you'll add this method to your service
     this.bookingService.getTourBookingByBookingId(this.bookingId).subscribe({
       next: (data) => {
         this.booking = data;
@@ -47,6 +58,138 @@ export class BookingInfoComponent {
         console.error('Error fetching booking:', err);
       }
     });
+  }
+
+  // Status update methods
+  updateBookingStatus(newStatus: string): void {
+    if (!this.booking) return;
+
+    // Don't allow changing if already closed
+    if (this.booking.status?.toString().toUpperCase() === 'CLOSED') {
+      this.saveError = 'Cannot change status of a closed booking';
+      this.clearMessagesAfterDelay();
+      return;
+    }
+
+    const statusMessages: { [key: string]: string } = {
+      'SUBMITTED': 'submit',
+      'CONFIRMED': 'confirm',
+      'REJECTED': 'reject',
+      'CLOSED': 'close'
+    };
+
+    const action = statusMessages[newStatus] || 'update';
+    
+    if (confirm(`Are you sure you want to ${action} this booking?`)) {
+      this.saving = true;
+      this.bookingService.updateBookingStatus(this.bookingId, newStatus).subscribe({
+        next: () => {
+          this.saving = false;
+          this.statusUpdateSuccess = `Booking ${action}ed successfully`;
+          // Update local booking status
+          if (this.booking) {
+            this.booking.status = newStatus;
+          }
+          this.selectedStatus = ''; // Reset dropdown
+          this.clearMessagesAfterDelay();
+        },
+        error: (error) => {
+          this.saving = false;
+          console.error('Error updating booking:', error);
+          this.saveError = `Failed to ${action} booking`;
+          this.selectedStatus = ''; // Reset dropdown
+          this.clearMessagesAfterDelay();
+        }
+      });
+    } else {
+      this.selectedStatus = ''; // Reset dropdown if cancelled
+    }
+  }
+
+  onStatusChange(event: any): void {
+    const newStatus = event.target.value;
+    if (newStatus && newStatus !== this.booking?.status) {
+      this.updateBookingStatus(newStatus);
+    }
+  }
+
+  getAvailableStatuses(): string[] {
+    if (!this.booking?.status) return this.bookingStatuses;
+    
+    const currentStatus = this.booking.status.toString().toUpperCase();
+    
+    // Don't show current status in dropdown
+    return this.bookingStatuses.filter(status => status !== currentStatus);
+  }
+
+  clearMessagesAfterDelay(): void {
+    setTimeout(() => {
+      this.statusUpdateSuccess = null;
+      this.saveError = null;
+    }, 5000);
+  }
+
+  enableEditMode(): void {
+    if (!this.booking) return;
+    
+    this.editMode = true;
+    // Create a deep copy of the booking for editing
+    this.editedBooking = {
+      id: this.booking.id,
+      tourId: this.booking.tour.id,
+      firstName: this.booking.firstName,
+      lastName: this.booking.lastName,
+      gender: this.booking.gender,
+      dob: this.formatDateForInput(this.booking.dob),
+      citizenship: this.booking.citizenship,
+      passportNumber: this.booking.passportNumber,
+      issueDate: this.formatDateForInput(this.booking.issueDate),
+      expiryDate: this.formatDateForInput(this.booking.expiryDate),
+      placeOfBirth: this.booking.placeOfBirth,
+      leadPassenger: this.booking.leadPassenger === 'true',
+      participantType: this.booking.participantType,
+      status: this.booking.status
+    };
+    this.saveError = null;
+  }
+
+  cancelEdit(): void {
+    this.editMode = false;
+    this.editedBooking = null;
+    this.saveError = null;
+  }
+
+  saveBooking(): void {
+    if (!this.editedBooking) return;
+    
+    this.saving = true;
+    this.saveError = null;
+    
+    this.bookingService.updateTourBooking(this.bookingId, this.editedBooking).subscribe({
+      next: (response) => {
+        this.saving = false;
+        this.editMode = false;
+        this.editedBooking = null;
+        this.statusUpdateSuccess = 'Booking updated successfully';
+        // Reload the booking to get the updated data
+        this.loadBookingDetail();
+        this.clearMessagesAfterDelay();
+      },
+      error: (err) => {
+        this.saving = false;
+        this.saveError = 'Failed to update booking. Please try again.';
+        console.error('Error updating booking:', err);
+      }
+    });
+  }
+
+  formatDateForInput(date: string): string {
+    // Convert to YYYY-MM-DD format for input fields
+    const d = new Date(date);
+    const year = d.getFullYear();
+    const month = String(d.getMonth() + 1).padStart(2, '0');
+    const day = String(d.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
   }
 
   getTotalParticipants(): number {
@@ -65,7 +208,7 @@ export class BookingInfoComponent {
   }
 
   editBooking(): void {
-    this.router.navigate(['/bookings/edit', this.bookingId]);
+    this.enableEditMode();
   }
 
   formatDate(date: string): string {
@@ -88,13 +231,19 @@ export class BookingInfoComponent {
   }
 
   getStatusBadgeClass(status: string): string {
+    const statusLower = status?.toString().toLowerCase() || '';
+    
     const statusMap: { [key: string]: string } = {
-      'SAVE': 'bg-warning text-dark',
-      'CONFIRMED': 'bg-success',
-      'PENDING': 'bg-info',
-      'CANCELLED': 'bg-danger'
+      'submitted': 'bg-warning text-dark',
+      'confirmed': 'bg-success',
+      'rejected': 'bg-danger',
+      'closed': 'bg-secondary',
+      // Legacy statuses
+      'save': 'bg-warning text-dark',
+      'pending': 'bg-info',
+      'cancelled': 'bg-danger'
     };
-    return statusMap[status] || 'bg-secondary';
+    return statusMap[statusLower] || 'bg-secondary';
   }
 
   isPassportExpiringSoon(expiryDate: string): boolean {
@@ -107,5 +256,19 @@ export class BookingInfoComponent {
 
   toggleParticipant(participantId: string): void {
     this.expandedParticipant = this.expandedParticipant === participantId ? null : participantId;
+  }
+
+  printBooking(): void {
+    this.bookingService.printBooking(this.bookingId).subscribe({
+      next: (blob) => {
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `booking_${this.bookingId}.pdf`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+      }
+    });
   }
 }

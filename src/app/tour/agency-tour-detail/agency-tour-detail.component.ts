@@ -1,4 +1,4 @@
-import { Component, inject, ViewChild } from '@angular/core';
+import { Component, inject, ViewChild, AfterViewInit, OnInit  } from '@angular/core';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { TourServiceService } from '../services/tour-service.service';
 import { CommonModule } from '@angular/common';
@@ -9,13 +9,14 @@ import { Terms } from '../model/terms';
 import { TourBooking } from '../../booking/model/tourBooking';
 import { TourResponse } from '../model/tour';
 
+
 @Component({
   selector: 'app-agency-tour-detail',
   imports: [CommonModule,FormsModule,RouterModule],
   templateUrl: './agency-tour-detail.component.html',
   styleUrl: './agency-tour-detail.component.css'
 })
-export class AgencyTourDetailComponent {
+export class AgencyTourDetailComponent implements OnInit,AfterViewInit  {
  @ViewChild('tourNoteForm') form: any;
   // @ViewChild('editTourForm') editTourForm!: NgForm;
 
@@ -25,6 +26,11 @@ export class AgencyTourDetailComponent {
   notes: Notes[] = [];
   bookings: TourBooking[] = [];
   loading: boolean = true;
+  selectedStatus: string = 'SAVE';
+  previousStatus: string = 'SAVE';
+  pendingStatus: string = '';
+  private modalElement: any;
+
   
   // For adding new terms/notes
   newTerm: string = '';
@@ -51,6 +57,16 @@ export class AgencyTourDetailComponent {
   ngOnInit(): void {
     this.tourId = this.route.snapshot.paramMap.get('id') || '';
     this.loadTourData();
+      if (this.tour && this.tour.status) {
+      this.selectedStatus = this.tour.status;
+    }
+  }
+
+    ngAfterViewInit(): void {
+    // Wait for view to initialize before getting modal element
+    setTimeout(() => {
+      this.modalElement = document.getElementById('statusChangeModal');
+    }, 100);
   }
 
   loadTourData(): void {
@@ -119,13 +135,86 @@ export class AgencyTourDetailComponent {
     // }
   }
 
-  changeStatus(data: string): void {
-    this.tourService.updateTourStatus(this.tourId).subscribe({
+  onStatusChange(event: Event): void {
+    const target = event.target as HTMLSelectElement;
+    const newStatus = target.value;
+    
+    // If status hasn't changed, do nothing
+    if (newStatus === this.selectedStatus) {
+      return;
+    }
+    
+    this.pendingStatus = newStatus;
+    
+    // Try to show modal
+    try {
+      if (this.modalElement) {
+        const bootstrapModal = new (window as any).bootstrap.Modal(this.modalElement);
+        bootstrapModal.show();
+      } else {
+        // Fallback: use native browser confirm
+        if (confirm(`Are you sure you want to change status from ${this.selectedStatus} to ${newStatus}?`)) {
+          this.selectedStatus = newStatus;
+          this.updateStatus();
+        } else {
+          // Reset select to previous value
+          (event.target as HTMLSelectElement).value = this.selectedStatus;
+        }
+      }
+    } catch (error) {
+      console.error('Modal error:', error);
+      // Fallback: use native browser confirm
+      if (confirm(`Are you sure you want to change status from ${this.selectedStatus} to ${newStatus}?`)) {
+        this.selectedStatus = newStatus;
+        this.updateStatus();
+      } else {
+        // Reset select to previous value
+        (event.target as HTMLSelectElement).value = this.selectedStatus;
+      }
+    }
+  }
+
+  confirmStatusChange(): void {
+    this.selectedStatus = this.pendingStatus;
+    this.updateStatus();
+  }
+
+  updateStatus(): void {
+    this.tourService.updateTourStatus(this.tourId, this.selectedStatus).subscribe({
       next: (updatedTour) => {
         this.tour = updatedTour;
         console.log('Tour status updated:', updatedTour);
+        alert('✅ Status updated successfully!');
+      },
+      error: (error) => {
+        console.error('Error updating tour status:', error);
+        alert('❌ Failed to update status. Please try again.');
+        // Note: We already changed selectedStatus, but API failed
+        // You might want to fetch the current status again
       }
     });
+  }
+
+  cancelStatusChange(): void {
+    // Reset the select dropdown to previous status
+    const selectElement = document.getElementById('tourStatus') as HTMLSelectElement;
+    if (selectElement) {
+      selectElement.value = this.selectedStatus;
+    }
+    this.pendingStatus = '';
+  }
+
+  getStatusBadgeClass(status?: string): string {
+    const currentStatus = status || this.selectedStatus;
+    const badgeClasses: { [key: string]: string } = {
+      'SAVE': 'bg-secondary',
+      'SUBMIT': 'bg-info',
+      'APPROVED': 'bg-success',
+      'ONHOLD': 'bg-warning text-dark',
+      'CLOSED': 'bg-dark',
+      'CANCELLED': 'bg-danger'
+    };
+    return badgeClasses[currentStatus] || 'bg-secondary';
   }
 
   addTerm(): void {

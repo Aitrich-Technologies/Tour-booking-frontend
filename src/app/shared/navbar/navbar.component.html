@@ -32,10 +32,100 @@
         <!-- Spacer pushes auth items right only on desktop -->
         <li class="flex-grow-1 d-none d-lg-block"></li>
 
+        <!-- Notifications Bell Icon -->
+        @if (authService.isAuthenticated()) {
+          <li class="nav-item dropdown">
+            <a class="nav-link position-relative notification-bell" 
+               style="cursor: pointer;"
+               (click)="toggleNotifications($event)">
+              <i class="bi bi-bell fs-5"></i>
+              @if (notificationService.unreadCount() > 0) {
+                <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
+                  {{ notificationService.unreadCount() > 99 ? '99+' : notificationService.unreadCount() }}
+                </span>
+              }
+            </a>
+
+            <!-- Notifications Dropdown -->
+            @if (showNotifications) {
+              <div class="dropdown-menu dropdown-menu-end show notification-dropdown" 
+                   style="width: 380px; max-height: 500px; overflow-y: auto;">
+                
+                <!-- Header -->
+                <div class="dropdown-header d-flex justify-content-between align-items-center border-bottom pb-2">
+                  <h6 class="mb-0">Notifications</h6>
+                  @if (notificationService.unreadCount() > 0) {
+                    <button class="btn btn-sm btn-link text-decoration-none p-0" 
+                            (click)="markAllAsRead($event)">
+                      Mark all as read
+                    </button>
+                  }
+                </div>
+
+                <!-- Notifications List -->
+                @if (notificationService.notifications().length === 0) {
+                  <div class="text-center py-4 text-muted">
+                    <i class="bi bi-bell-slash fs-1 d-block mb-2"></i>
+                    <p class="mb-0">No notifications</p>
+                  </div>
+                } @else {
+                  @for (notification of notificationService.notifications(); track notification.id) {
+                    <div class="dropdown-item notification-item p-3" 
+                         [class.unread]="!notification.isRead"
+                         (click)="handleNotificationClick(notification)"
+                         style="cursor: pointer; border-bottom: 1px solid #f0f0f0;">
+                      
+                      <div class="d-flex align-items-start">
+                        <!-- Icon -->
+                        <i class="me-3 fs-5" [ngClass]="getNotificationIcon(notification.type)"></i>
+                        
+                        <!-- Content -->
+                        <div class="flex-grow-1">
+                          <div class="d-flex justify-content-between align-items-start">
+                            <h6 class="mb-1 fw-semibold" [class.text-primary]="!notification.isRead">
+                              {{ notification.title }}
+                            </h6>
+                            <small class="text-muted ms-2">{{ getTimeAgo(notification.createdAt) }}</small>
+                          </div>
+                          <p class="mb-0 small text-muted">{{ notification.message }}</p>
+                        </div>
+
+                        <!-- Actions -->
+                        <div class="dropdown">
+                          <button class="btn btn-sm btn-link text-muted p-0 ms-2" 
+                                  type="button"
+                                  data-bs-toggle="dropdown"
+                                  (click)="$event.stopPropagation()">
+                            <i class="bi bi-three-dots-vertical"></i>
+                          </button>
+                          <ul class="dropdown-menu dropdown-menu-end">
+                            @if (!notification.isRead) {
+                              <li>
+                                <a class="dropdown-item" (click)="markAsRead(notification.id, $event)">
+                                  <i class="bi bi-check2 me-2"></i>Mark as read
+                                </a>
+                              </li>
+                            }
+                            <li>
+                              <a class="dropdown-item text-danger" (click)="deleteNotification(notification.id, $event)">
+                                <i class="bi bi-trash me-2"></i>Delete
+                              </a>
+                            </li>
+                          </ul>
+                        </div>
+                      </div>
+                    </div>
+                  }
+                }
+              </div>
+            }
+          </li>
+        }
+
         <!-- Authentication Section -->
         @if (authService.isAuthenticated()) {
           <!-- User dropdown when authenticated -->
-          <li class="nav-item dropdown">
+          <li class="nav-item dropdown ms-2">
             <a class="nav-link dropdown-toggle d-flex align-items-center" 
                href="#" 
                id="userDropdown" 
@@ -57,12 +147,6 @@
               </li>
               <li><hr class="dropdown-divider"></li>
               
-              <!-- Role-specific dropdown items -->
-              <!-- <li *appHasRole="UserRole.CUSTOMER">
-                <a class="dropdown-item" routerLink="/profile">
-                  <i class="bi bi-person me-2"></i>My Profile
-                </a>
-              </li> -->
               <li *appHasRole="UserRole.CUSTOMER">
                 <a class="dropdown-item" routerLink="/bookings">
                   <i class="bi bi-calendar-check me-2"></i>My Bookings
@@ -79,12 +163,6 @@
                   <i class="bi bi-building me-2"></i>Agency Profile
                 </a>
               </li>
-              
-              <!-- <li *appHasRole="UserRole.CONSULTANT">
-                <a class="dropdown-item" routerLink="/consultant/dashboard">
-                  <i class="bi bi-clipboard-data me-2"></i>Consultant Panel
-                </a>
-              </li> -->
               
               <li><hr class="dropdown-divider"></li>
               <li>

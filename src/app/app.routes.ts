@@ -34,4 +34,10 @@ export const routes: Routes = [
         loadComponent: () => import('./shared/consultant-dashboard/consultant-dashboard.component')
             .then(c => c.ConsultantDashboardComponent)
     },
+    {
+        path: 'edit-requests',
+        // canActivate: [roleGuard([UserRole.CUSTOMER])],
+        loadComponent: () => import('./shared/edit-requests/edit-requests.component')
+            .then(r => r.EditRequestsComponent)
+    },
 ];

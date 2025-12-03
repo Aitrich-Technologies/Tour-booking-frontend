@@ -25,6 +25,13 @@
     </button>
   </div>
 
+  <!-- Save Error Alert -->
+  <div *ngIf="saveError" class="alert alert-danger alert-dismissible fade show" role="alert">
+    <i class="bi bi-exclamation-triangle me-2"></i>
+    {{ saveError }}
+    <button type="button" class="btn-close" (click)="saveError = null"></button>
+  </div>
+
   <!-- Booking Details -->
   <div *ngIf="booking && !loading" class="row">
     <!-- Main Content -->
@@ -35,8 +42,8 @@
           <h5 class="mb-0">
             <i class="bi bi-person-circle me-2"></i>Passenger Information
           </h5>
-          <span class="badge" [ngClass]="getStatusBadgeClass(booking.status)">
-            {{ booking.status }}
+          <span class="badge" [ngClass]="getStatusBadgeClass(editMode ? editedBooking.status : booking.status)">
+            {{ editMode ? editedBooking.status : booking.status }}
           </span>
         </div>
         <div class="card-body">
@@ -44,78 +51,161 @@
             <div class="col-md-6 mb-3">
               <div class="d-flex align-items-center mb-4">
                 <div class="avatar-circle bg-primary text-white me-3">
-                  {{ booking.firstName.charAt(0) }}{{ booking.lastName.charAt(0) }}
+                  {{ editMode ? editedBooking.firstName.charAt(0) : booking.firstName.charAt(0) }}{{ editMode ?
+                  editedBooking.lastName.charAt(0) : booking.lastName.charAt(0) }}
                 </div>
                 <div>
-                  <h4 class="mb-0">{{ booking.firstName }} {{ booking.lastName }}</h4>
-                  <span *ngIf="booking.leadPassenger === 'true'" class="badge bg-warning text-dark">
+                  <h4 class="mb-0">
+                    {{ editMode ? editedBooking.firstName : booking.firstName }}
+                    {{ editMode ? editedBooking.lastName : booking.lastName }}
+                  </h4>
+                  <span *ngIf="(editMode ? editedBooking.leadPassenger : booking.leadPassenger === 'true')"
+                    class="badge bg-warning text-dark">
                     <i class="bi bi-star-fill me-1"></i>Lead Passenger
                   </span>
                 </div>
               </div>
             </div>
             <div class="col-md-6 text-md-end">
-              <button class="btn btn-primary me-2" (click)="editBooking()">
-                <i class="bi bi-pencil me-1"></i>Edit Booking
-              </button>
-              <button class="btn btn-outline-primary">
-                <i class="bi bi-printer me-1"></i>Print
-              </button>
+              <!-- Edit Mode Buttons -->
+              <ng-container *ngIf="editMode">
+                <button class="btn btn-success me-2" (click)="saveBooking()" [disabled]="saving">
+                  <span *ngIf="!saving">
+                    <i class="bi bi-check-lg me-1"></i>Save Changes
+                  </span>
+                  <span *ngIf="saving">
+                    <span class="spinner-border spinner-border-sm me-1"></span>Saving...
+                  </span>
+                </button>
+                <button class="btn btn-outline-secondary" (click)="cancelEdit()" [disabled]="saving">
+                  <i class="bi bi-x-lg me-1"></i>Cancel
+                </button>
+              </ng-container>
+              <!-- View Mode Buttons -->
+              <ng-container *ngIf="!editMode">
+                <button class="btn btn-primary me-2" (click)="editBooking()">
+                  <i class="bi bi-pencil me-1"></i>Edit Booking
+                </button>
+                <button class="btn btn-outline-primary" (click)="printBooking()">
+                  <i class="bi bi-printer me-1"></i>Print
+                </button>
+              </ng-container>
             </div>
           </div>
 
           <hr>
 
-          <div class="row">
-            <div class="col-md-6">
-              <div class="info-item mb-3">
-                <label class="text-muted small mb-1">Gender</label>
-                <div class="fw-bold">
-                  <i class="bi bi-gender-{{ booking.gender.toLowerCase() }} me-2"></i>
-                  {{ booking.gender }}
+          <!-- View Mode -->
+          <ng-container *ngIf="!editMode">
+            <div class="row">
+              <div class="col-md-6">
+                <div class="info-item mb-3">
+                  <label class="text-muted small mb-1">First Name</label>
+                  <div class="fw-bold">{{ booking.firstName }}</div>
+                </div>
+
+                <div class="info-item mb-3">
+                  <label class="text-muted small mb-1">Last Name</label>
+                  <div class="fw-bold">{{ booking.lastName }}</div>
+                </div>
+
+                <div class="info-item mb-3">
+                  <label class="text-muted small mb-1">Gender</label>
+                  <div class="fw-bold">
+                    <i class="bi bi-gender-{{ booking.gender.toLowerCase() }} me-2"></i>
+                    {{ booking.gender }}
+                  </div>
+                </div>
+
+                <div class="info-item mb-3">
+                  <label class="text-muted small mb-1">Date of Birth</label>
+                  <div class="fw-bold">
+                    <i class="bi bi-cake me-2"></i>
+                    {{ formatDate(booking.dob) }}
+                    <span class="text-muted small">({{ calculateAge(booking.dob) }} years old)</span>
+                  </div>
                 </div>
               </div>
 
-              <div class="info-item mb-3">
-                <label class="text-muted small mb-1">Date of Birth</label>
-                <div class="fw-bold">
-                  <i class="bi bi-cake me-2"></i>
-                  {{ formatDate(booking.dob) }}
-                  <span class="text-muted small">({{ calculateAge(booking.dob) }} years old)</span>
+              <div class="col-md-6">
+                <div class="info-item mb-3">
+                  <label class="text-muted small mb-1">Citizenship</label>
+                  <div class="fw-bold">
+                    <i class="bi bi-flag me-2"></i>
+                    {{ booking.citizenship }}
+                  </div>
                 </div>
-              </div>
 
-              <div class="info-item mb-3">
-                <label class="text-muted small mb-1">Citizenship</label>
-                <div class="fw-bold">
-                  <i class="bi bi-flag me-2"></i>
-                  {{ booking.citizenship }}
+                <div class="info-item mb-3">
+                  <label class="text-muted small mb-1">Place of Birth</label>
+                  <div class="fw-bold">
+                    <i class="bi bi-geo-alt me-2"></i>
+                    {{ booking.placeOfBirth }}
+                  </div>
+                </div>
+
+                <div class="info-item mb-3">
+                  <label class="text-muted small mb-1">Participant Type</label>
+                  <div>
+                    <span class="badge bg-info">{{ booking.participantType }}</span>
+                  </div>
+                </div>
+
+                <div class="info-item mb-3">
+                  <label class="text-muted small mb-1">Booking ID</label>
+                  <div class="font-monospace small text-muted">{{ booking.referenceNumber }}</div>
                 </div>
               </div>
             </div>
+          </ng-container>
 
-            <div class="col-md-6">
-              <div class="info-item mb-3">
-                <label class="text-muted small mb-1">Place of Birth</label>
-                <div class="fw-bold">
-                  <i class="bi bi-geo-alt me-2"></i>
-                  {{ booking.placeOfBirth }}
+          <!-- Edit Mode -->
+          <ng-container *ngIf="editMode">
+            <div class="row">
+              <div class="col-md-6">
+                <div class="mb-3">
+                  <label class="form-label">First Name</label>
+                  <input type="text" class="form-control" [(ngModel)]="editedBooking.firstName" required>
+                </div>
+
+                <div class="mb-3">
+                  <label class="form-label">Last Name</label>
+                  <input type="text" class="form-control" [(ngModel)]="editedBooking.lastName" required>
+                </div>
+
+                <div class="mb-3">
+                  <label class="form-label">Gender</label>
+                  <select class="form-select" [(ngModel)]="editedBooking.gender" required>
+                    <option value="Male">Male</option>
+                    <option value="Female">Female</option>
+                    <option value="Other">Other</option>
+                  </select>
+                </div>
+
+                <div class="mb-3">
+                  <label class="form-label">Date of Birth</label>
+                  <input type="date" class="form-control" [(ngModel)]="editedBooking.dob" required>
                 </div>
               </div>
 
-              <div class="info-item mb-3">
-                <label class="text-muted small mb-1">Participant Type</label>
-                <div>
-                  <span class="badge bg-info">{{ booking.participantType }}</span>
+              <div class="col-md-6">
+                <div class="mb-3">
+                  <label class="form-label">Citizenship</label>
+                  <input type="text" class="form-control" [(ngModel)]="editedBooking.citizenship" required>
                 </div>
-              </div>
 
-              <div class="info-item mb-3">
-                <label class="text-muted small mb-1">Booking ID</label>
-                <div class="font-monospace small text-muted">{{ booking.id }}</div>
+                <div class="mb-3">
+                  <label class="form-label">Place of Birth</label>
+                  <input type="text" class="form-control" [(ngModel)]="editedBooking.placeOfBirth" required>
+                </div>
+
+                <div class="mb-3">
+                  <label class="form-label">Participant Type</label>
+                  <input type="text" class="form-control" [(ngModel)]="editedBooking.participantType" required>
+                </div>
               </div>
             </div>
-          </div>
+          </ng-container>
         </div>
       </div>
 
@@ -127,39 +217,70 @@
           </h5>
         </div>
         <div class="card-body">
-          <div *ngIf="isPassportExpiringSoon(booking.expiryDate)" class="alert alert-warning mb-3">
+          <div *ngIf="isPassportExpiringSoon(editMode ? editedBooking.expiryDate : booking.expiryDate)"
+            class="alert alert-warning mb-3">
             <i class="bi bi-exclamation-triangle me-2"></i>
             <strong>Warning:</strong> Passport expires within 6 months!
           </div>
 
-          <div class="row">
-            <div class="col-md-6">
-              <div class="info-item mb-3">
-                <label class="text-muted small mb-1">Passport Number</label>
-                <div class="fw-bold font-monospace">{{ booking.passportNumber }}</div>
+          <!-- View Mode -->
+          <ng-container *ngIf="!editMode">
+            <div class="row">
+              <div class="col-md-6">
+                <div class="info-item mb-3">
+                  <label class="text-muted small mb-1">Passport Number</label>
+                  <div class="fw-bold font-monospace">{{ booking.passportNumber }}</div>
+                </div>
+
+                <div class="info-item mb-3">
+                  <label class="text-muted small mb-1">Issue Date</label>
+                  <div class="fw-bold">
+                    <i class="bi bi-calendar-check me-2"></i>
+                    {{ formatDate(booking.issueDate) }}
+                  </div>
+                </div>
               </div>
 
-              <div class="info-item mb-3">
-                <label class="text-muted small mb-1">Issue Date</label>
-                <div class="fw-bold">
-                  <i class="bi bi-calendar-check me-2"></i>
-                  {{ formatDate(booking.issueDate) }}
+              <div class="col-md-6">
+                <div class="info-item mb-3">
+                  <label class="text-muted small mb-1">Expiry Date</label>
+                  <div class="fw-bold" [class.text-danger]="isPassportExpiringSoon(booking.expiryDate)">
+                    <i class="bi bi-calendar-x me-2"></i>
+                    {{ formatDate(booking.expiryDate) }}
+                    <i *ngIf="isPassportExpiringSoon(booking.expiryDate)"
+                      class="bi bi-exclamation-circle text-danger ms-2"></i>
+                  </div>
                 </div>
               </div>
             </div>
+          </ng-container>
 
-            <div class="col-md-6">
-              <div class="info-item mb-3">
-                <label class="text-muted small mb-1">Expiry Date</label>
-                <div class="fw-bold" [class.text-danger]="isPassportExpiringSoon(booking.expiryDate)">
-                  <i class="bi bi-calendar-x me-2"></i>
-                  {{ formatDate(booking.expiryDate) }}
-                  <i *ngIf="isPassportExpiringSoon(booking.expiryDate)"
-                    class="bi bi-exclamation-circle text-danger ms-2"></i>
+          <!-- Edit Mode -->
+          <ng-container *ngIf="editMode">
+            <div class="row">
+              <div class="col-md-6">
+                <div class="mb-3">
+                  <label class="form-label">Passport Number</label>
+                  <input type="text" class="form-control" [(ngModel)]="editedBooking.passportNumber" required>
+                </div>
+
+                <div class="mb-3">
+                  <label class="form-label">Issue Date</label>
+                  <input type="date" class="form-control" [(ngModel)]="editedBooking.issueDate" required>
+                </div>
+              </div>
+
+              <div class="col-md-6">
+                <div class="mb-3">
+                  <label class="form-label">Expiry Date</label>
+                  <input type="date" class="form-control" [(ngModel)]="editedBooking.expiryDate" required>
+                  <small *ngIf="isPassportExpiringSoon(editedBooking.expiryDate)" class="text-danger">
+                    <i class="bi bi-exclamation-circle me-1"></i>Expires within 6 months
+                  </small>
                 </div>
               </div>
             </div>
-          </div>
+          </ng-container>
         </div>
       </div>
 
@@ -173,7 +294,6 @@
         <div class="card-body p-0">
           <div class="list-group list-group-flush">
             <div *ngFor="let participant of booking.participants; let i = index" class="list-group-item p-0">
-
               <!-- Participant Header (Clickable) -->
               <div (click)="toggleParticipant(participant.id)"
                 class="p-3 d-flex justify-content-between align-items-center"
@@ -364,7 +484,48 @@
             <strong>Total Amount</strong>
             <h5 class="text-primary mb-0">${{ calculateTotalPrice() }}</h5>
           </div>
+        </div>
+      </div>
+
+      <!-- Status Management Card -->
+      <div class="card shadow-sm mb-4 border-primary">
+        <div class="card-header bg-primary text-white">
+          <h6 class="mb-0">
+            <i class="bi bi-gear me-2"></i>Booking Status
+          </h6>
+        </div>
+        <div class="card-body">
+          <!-- Current Status Display -->
+          <div class="mb-3">
+            <label class="text-muted small d-block mb-2">Current Status</label>
+            <span class="badge fs-6" [ngClass]="getStatusBadgeClass(booking.status)">
+              {{ booking.status }}
+            </span>
+          </div>
+
           <hr>
+
+          <!-- Status Update Section -->
+          <div *ngIf="booking.status.toString() === 'CLOSED'">
+            <div class="alert alert-secondary py-2 small mb-0">
+              <i class="bi bi-lock me-2"></i>This booking is closed and cannot be modified
+            </div>
+          </div>
+
+          <div *ngIf="booking.status.toString() !== 'CLOSED'">
+            <label class="form-label small text-muted">Change Status</label>
+            <select class="form-select" [(ngModel)]="selectedStatus" (change)="onStatusChange($event)"
+              [disabled]="saving || editMode">
+              <option value="">-- Select New Status --</option>
+              <option *ngFor="let status of getAvailableStatuses()" [value]="status">
+                {{ status }}
+              </option>
+            </select>
+            <small class="text-muted d-block mt-2">
+              <i class="bi bi-info-circle me-1"></i>
+              Select a status to update the booking
+            </small>
+          </div>
         </div>
       </div>
 
@@ -374,16 +535,18 @@
           <h6 class="mb-0">Quick Actions</h6>
         </div>
         <div class="list-group list-group-flush">
-          <button class="list-group-item list-group-item-action">
+          <button class="list-group-item list-group-item-action" [disabled]="editMode || saving">
             <i class="bi bi-envelope me-2"></i>Send Confirmation Email
           </button>
-          <button class="list-group-item list-group-item-action">
+          <button class="list-group-item list-group-item-action" [disabled]="editMode || saving">
             <i class="bi bi-download me-2"></i>Download Itinerary
           </button>
-          <button class="list-group-item list-group-item-action">
+          <button class="list-group-item list-group-item-action" [disabled]="editMode || saving">
             <i class="bi bi-credit-card me-2"></i>Payment History
           </button>
-          <button class="list-group-item list-group-item-action text-danger">
+          <button class="list-group-item list-group-item-action text-danger"
+            [disabled]="editMode || saving || booking.status.toString()=== 'CLOSED'"
+            (click)="selectedStatus = 'REJECTED'; updateBookingStatus('REJECTED')">
             <i class="bi bi-x-circle me-2"></i>Cancel Booking
           </button>
         </div>
@@ -404,7 +567,7 @@
           </div>
           <div>
             <i class="bi bi-envelope me-2"></i>
-            <a href="mailto:support@tours.com">support &nbsp; tours.com</a>
+            <a href="mailto:lionssportsclub2000@gmail.com">support&#64;tours.com</a>
           </div>
         </div>
       </div>

@@ -4,6 +4,11 @@
     <i class="bi bi-arrow-left me-2"></i>Back to Bookings
   </button>
 
+  <!-- Download Button -->
+  <button class="btn btn-outline-primary mb-4 d-flex float-end  " (click)="downloadBookingDetails()">
+    <i class="bi bi-download me-2"></i>Download Booking Details
+  </button>
+
   <!-- Loading State -->
   <div *ngIf="isLoading" class="text-center py-5">
     <div class="spinner-border text-primary" role="status">
@@ -23,48 +28,110 @@
     <button type="button" class="btn-close" (click)="successMessage = ''"></button>
   </div>
 
+  <div *ngIf="editRequestSent && !editRequestApproved" class="alert alert-info" role="alert">
+    <i class="bi bi-clock-history me-2"></i>
+    Edit request is pending admin approval. You'll be notified once approved.
+  </div>
   <!-- Booking Details -->
   <div *ngIf="!isLoading && booking" class="row">
     <!-- Left Column - Booking Info -->
     <div class="col-lg-4 mb-4">
       <div class="card shadow-sm border-0 rounded-3 sticky-top" style="top: 20px;">
-        <div class="card-header bg-primary text-white">
+        <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
           <h5 class="mb-0 fw-bold">
             <i class="bi bi-receipt me-2"></i>Booking Details
           </h5>
+          <button *ngIf="!isEditMode" class="btn btn-outline-light btn-sm" (click)="editBooking(booking)"
+            [disabled]="editRequestSent && !editRequestApproved">
+            <i class="bi bi-pencil me-1"></i>
+            {{ editRequestSent && !editRequestApproved ? 'Pending Approval' : 'Edit' }}
+          </button>
+          <div *ngIf="isEditMode" class="btn-group btn-group-sm">
+            <button class="btn btn-success" (click)="saveBookingChanges()">
+              <i class="bi bi-check-lg me-1"></i>Save
+            </button>
+            <button class="btn btn-outline-light" (click)="cancelEdit()">
+              <i class="bi bi-x-lg me-1"></i>Cancel
+            </button>
+          </div>
         </div>
         <div class="card-body">
           <!-- Status -->
           <div class="mb-3">
             <small class="text-muted d-block mb-1">Status</small>
-            <!-- <span class="badge fs-6" [ngClass]="getStatusBadgeClass(booking.status)">
+            <span class="badge fs-6" [ngClass]="getStatusBadgeClass(booking.status)">
               {{ booking.status }}
-            </span> -->
+            </span>
           </div>
 
           <!-- Booking ID -->
           <div class="mb-3">
             <small class="text-muted d-block mb-1">Booking ID</small>
-            <div class="fw-semibold text-break">{{ booking.id }}</div>
+            <div class="fw-semibold text-break">{{ booking.referenceNumber }}</div>
           </div>
 
           <!-- Customer Name -->
           <div class="mb-3">
-            <small class="text-muted d-block mb-1">Customer Name</small>
-            <div class="fw-semibold">{{ booking.firstName }}</div>
+            <small class="text-muted d-block mb-1">First Name</small>
+            <input *ngIf="isEditMode" type="text" class="form-control" [(ngModel)]="booking.firstName">
+            <div *ngIf="!isEditMode" class="fw-semibold">{{ booking.firstName }}</div>
+          </div>
+
+          <div class="mb-3">
+            <small class="text-muted d-block mb-1">Last Name</small>
+            <input *ngIf="isEditMode" type="text" class="form-control" [(ngModel)]="booking.lastName">
+            <div *ngIf="!isEditMode" class="fw-semibold">{{ booking.lastName }}</div>
+          </div>
+
+          <div class="mb-3">
+            <small class="text-muted d-block mb-1">Gender</small>
+            <input *ngIf="isEditMode" type="text" class="form-control" [(ngModel)]="booking.gender">
+            <div *ngIf="!isEditMode" class="fw-semibold">{{ booking.gender }}</div>
+          </div>
+
+          <div class="mb-3">
+            <small class="text-muted d-block mb-1">Date of Birth</small>
+            <input *ngIf="isEditMode" type="text" class="form-control" [(ngModel)]="booking.dob">
+            <div *ngIf="!isEditMode" class="fw-semibold">{{ booking.dob }}</div>
+          </div>
+
+          <div class="mb-3">
+            <small class="text-muted d-block mb-1">Place of Birth</small>
+            <input *ngIf="isEditMode" type="text" class="form-control" [(ngModel)]="booking.placeOfBirth">
+            <div *ngIf="!isEditMode" class="fw-semibold">{{ booking.placeOfBirth }}</div>
+          </div>
+
+          <div class="mb-3">
+            <small class="text-muted d-block mb-1">Citizenship</small>
+            <input *ngIf="isEditMode" type="text" class="form-control" [(ngModel)]="booking.citizenship">
+            <div *ngIf="!isEditMode" class="fw-semibold">{{ booking.citizenship }}</div>
+          </div>
+
+          <div class="mb-3">
+            <small class="text-muted d-block mb-1">Passport Number</small>
+            <input *ngIf="isEditMode" type="text" class="form-control" [(ngModel)]="booking.passportNumber">
+            <div *ngIf="!isEditMode" class="fw-semibold">{{ booking.passportNumber }}</div>
+          </div>
+
+          <div class="mb-3">
+            <small class="text-muted d-block mb-1">Issue Date</small>
+            <input *ngIf="isEditMode" type="text" class="form-control" [(ngModel)]="booking.issueDate">
+            <div *ngIf="!isEditMode" class="fw-semibold">{{ booking.issueDate }}</div>
           </div>
 
           <!-- Booking Date -->
           <div class="mb-3">
             <small class="text-muted d-block mb-1">Booking Date</small>
-            <div class="fw-semibold">{{ booking.expiryDate| date:'fullDate' }}</div>
+            <input *ngIf="isEditMode" type="date" class="form-control"
+              [ngModel]="booking.expiryDate | date:'yyyy-MM-dd'" (ngModelChange)="booking.expiryDate = $event">
+            <div *ngIf="!isEditMode" class="fw-semibold">{{ booking.expiryDate | date:'fullDate' }}</div>
           </div>
 
           <hr>
 
           <!-- Tour Details -->
           <h6 class="fw-bold mb-3">Tour Information</h6>
-          
+
           <div class="mb-3">
             <small class="text-muted d-block mb-1">Tour Name</small>
             <div class="fw-semibold">{{ booking.tour.tourName }}</div>
@@ -94,7 +161,7 @@
 
           <!-- Pricing -->
           <h6 class="fw-bold mb-3">Pricing</h6>
-          
+
           <div class="d-flex justify-content-between mb-2">
             <span class="text-muted">Price per person:</span>
             <span class="fw-semibold">₹{{ booking.tour.price| number:'1.2-2' }}</span>
@@ -113,11 +180,11 @@
           </div>
 
           <!-- Actions -->
-          <!-- <div class="mt-4" *ngIf="booking.status && booking.status.toString().toLowerCase() === 'pending'">
+          <div class="mt-4">
             <button class="btn btn-danger w-100" (click)="cancelBooking()">
               <i class="bi bi-x-circle me-2"></i>Cancel Booking
             </button>
-          </div> -->
+          </div>
         </div>
       </div>
     </div>
@@ -130,9 +197,7 @@
             <i class="bi bi-people me-2"></i>Participants
             <span class="badge bg-primary ms-2">{{ participants.length }}</span>
           </h5>
-          <button 
-            class="btn btn-primary btn-sm rounded-pill" 
-            (click)="toggleAddParticipant()"
+          <button class="btn btn-primary btn-sm rounded-pill" (click)="toggleAddParticipant()"
             *ngIf="!showAddParticipant">
             <i class="bi bi-plus-circle me-1"></i>Add Participant
           </button>
@@ -145,17 +210,13 @@
               <h6 class="fw-bold mb-3">
                 {{ editingParticipantId ? 'Edit Participant' : 'Add New Participant' }}
               </h6>
-              
+
               <form [formGroup]="participantForm" (ngSubmit)="saveParticipant()">
                 <div class="row g-3">
                   <!-- First Name -->
                   <div class="col-md-6">
                     <label class="form-label">First Name *</label>
-                    <input 
-                      type="text" 
-                      class="form-control" 
-                      name="firstName"
-                      formControlName="firstName"
+                    <input type="text" class="form-control" name="firstName" formControlName="firstName"
                       [class.is-invalid]="participantForm.get('firstName')?.invalid && participantForm.get('firstName')?.touched">
                     <div class="invalid-feedback">First name is required</div>
                   </div>
@@ -163,11 +224,7 @@
                   <!-- Last Name -->
                   <div class="col-md-6">
                     <label class="form-label">Last Name *</label>
-                    <input 
-                      type="text" 
-                      class="form-control" 
-                      name="lastName"
-                      formControlName="lastName"
+                    <input type="text" class="form-control" name="lastName" formControlName="lastName"
                       [class.is-invalid]="participantForm.get('lastName')?.invalid && participantForm.get('lastName')?.touched">
                     <div class="invalid-feedback">Last name is required</div>
                   </div>
@@ -175,11 +232,7 @@
                   <!-- Email -->
                   <div class="col-md-6">
                     <label class="form-label">Email</label>
-                    <input 
-                      type="email" 
-                      class="form-control" 
-                      name="email"
-                      formControlName="email"
+                    <input type="email" class="form-control" name="email" formControlName="email"
                       [class.is-invalid]="participantForm.get('email')?.invalid && participantForm.get('email')?.touched">
                     <div class="invalid-feedback">Valid email is required</div>
                   </div>
@@ -187,10 +240,7 @@
                   <!-- Gender -->
                   <div class="col-md-6">
                     <label class="form-label">Gender </label>
-                    <select 
-                      class="form-select" 
-                      name="gender"
-                      formControlName="gender"
+                    <select class="form-select" name="gender" formControlName="gender"
                       [class.is-invalid]="participantForm.get('gender')?.invalid && participantForm.get('gender')?.touched">
                       <option value="">Select Gender</option>
                       <option value="Male">Male</option>
@@ -203,11 +253,7 @@
                   <!-- DOB -->
                   <div class="col-md-6">
                     <label class="form-label">Date of Birth </label>
-                    <input 
-                      type="date" 
-                      class="form-control" 
-                      name="dob"
-                      formControlName="dob"
+                    <input type="date" class="form-control" name="dob" formControlName="dob"
                       [class.is-invalid]="participantForm.get('dob')?.invalid && participantForm.get('dob')?.touched">
                     <div class="invalid-feedback">Date of birth is required</div>
                   </div>
@@ -215,22 +261,15 @@
                   <!-- Nationality -->
                   <div class="col-md-6">
                     <label class="form-label">Citizenship</label>
-                    <input 
-                      type="text" 
-                      class="form-control" 
-                      name="citizenship"
-                      formControlName="citizenship"
+                    <input type="text" class="form-control" name="citizenship" formControlName="citizenship"
                       [class.is-invalid]="participantForm.get('citizenship')?.invalid && participantForm.get('citizenship')?.touched">
                     <div class="invalid-feedback">Nationality is required</div>
                   </div>
 
-                <!-- Place of Birth -->
+                  <!-- Place of Birth -->
                   <div class="col-md-6">
                     <label class="form-label">Place of Birth </label>
-                    <input 
-                      type="text" 
-                      class="form-control" 
-                      formControlName="placeOfBirth"
+                    <input type="text" class="form-control" formControlName="placeOfBirth"
                       [class.is-invalid]="participantForm.get('placeOfBirth')?.invalid && participantForm.get('placeOfBirth')?.touched">
                     <div class="invalid-feedback">Place of birth is required</div>
                   </div>
@@ -238,11 +277,7 @@
                   <!-- Phone Number -->
                   <div class="col-md-6">
                     <label class="form-label">Phone Number </label>
-                    <input 
-                      type="text" 
-                      class="form-control" 
-                      name="phoneNumber"
-                      formControlName="phoneNumber"
+                    <input type="text" class="form-control" name="phoneNumber" formControlName="phoneNumber"
                       [class.is-invalid]="participantForm.get('phoneNumber')?.invalid && participantForm.get('phoneNumber')?.touched">
                     <div class="invalid-feedback">Phone number is required</div>
                   </div>
@@ -250,52 +285,32 @@
                   <!-- Passport Number (Optional) -->
                   <div class="col-md-6">
                     <label class="form-label">Passport Number</label>
-                    <input 
-                      type="text" 
-                      class="form-control" 
-                      name="passportNumber"
-                      formControlName="passportNumber"
+                    <input type="text" class="form-control" name="passportNumber" formControlName="passportNumber"
                       placeholder="Optional for international tours">
                   </div>
 
                   <!-- Issue Date -->
                   <div class="col-md-6">
                     <label class="form-label">Issue Date</label>
-                    <input 
-                      type="date" 
-                      class="form-control" 
-                      formControlName="issueDate"
-                      name="issueDate"
-                      rows="3"
+                    <input type="date" class="form-control" formControlName="issueDate" name="issueDate" rows="3"
                       placeholder="Dietary restrictions, medical conditions, accessibility needs, etc.">
                   </div>
 
                   <!-- Expiry Date -->
                   <div class="col-md-6">
                     <label class="form-label">Expiry Date</label>
-                    <input 
-                      type="date" 
-                      class="form-control" 
-                      formControlName="expiryDate"
-                      name="expiryDate"
-                      rows="3"
-                      placeholder="Dietary restrictions, medical conditions, accessibility needs, etc.">  
+                    <input type="date" class="form-control" formControlName="expiryDate" name="expiryDate" rows="3"
+                      placeholder="Dietary restrictions, medical conditions, accessibility needs, etc.">
                   </div>
 
                   <!-- Form Actions -->
                   <div class="col-12">
                     <div class="d-flex gap-2 justify-content-end">
-                      <button 
-                        type="button" 
-                        class="btn btn-outline-secondary"
-                        (click)="cancelEdit()"
+                      <button type="button" class="btn btn-outline-secondary" (click)="cancelEdit()"
                         [disabled]="isSaving">
                         Cancel
                       </button>
-                      <button 
-                        type="submit" 
-                        class="btn btn-primary"
-                        [disabled]="participantForm.invalid || isSaving">
+                      <button type="submit" class="btn btn-primary" [disabled]="participantForm.invalid || isSaving">
                         <span *ngIf="isSaving" class="spinner-border spinner-border-sm me-2"></span>
                         <i *ngIf="!isSaving" class="bi bi-check-circle me-1"></i>
                         {{ editingParticipantId ? 'Update' : 'Add' }} Participant
@@ -318,10 +333,7 @@
                       Participant {{ i + 1 }}
                     </h6>
                     <div class="dropdown">
-                      <button 
-                        class="btn btn-sm btn-light" 
-                        type="button" 
-                        data-bs-toggle="dropdown">
+                      <button class="btn btn-sm btn-light" type="button" data-bs-toggle="dropdown">
                         <i class="bi bi-three-dots-vertical"></i>
                       </button>
                       <ul class="dropdown-menu">
